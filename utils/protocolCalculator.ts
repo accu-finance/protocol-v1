@@ -332,14 +332,16 @@ export const calcExpectedReserveDataAfterRepay = (
       txTimestamp
     );
 
-    expectedReserveData.principalStableDebt = expectedReserveData.totalStableDebt = expectedStableDebt.sub(
-      amountToRepay
-    );
+    expectedReserveData.principalStableDebt = expectedReserveData.totalStableDebt =
+      expectedStableDebt.sub(amountToRepay);
 
     //due to accumulation errors, the total stable debt might be smaller than the last user debt.
     //in this case we simply set the total supply and avg stable rate to 0.
     if (expectedReserveData.totalStableDebt.isNegative()) {
-      expectedReserveData.principalStableDebt = expectedReserveData.totalStableDebt = expectedReserveData.averageStableBorrowRate = Zero;
+      expectedReserveData.principalStableDebt =
+        expectedReserveData.totalStableDebt =
+        expectedReserveData.averageStableBorrowRate =
+          Zero;
     } else {
       expectedReserveData.averageStableBorrowRate = calcExpectedAverageStableBorrowRate(
         reserveDataBefore.averageStableBorrowRate,
@@ -351,7 +353,10 @@ export const calcExpectedReserveDataAfterRepay = (
       //also due to accumulation errors, the final avg stable rate when the last user repays might be negative.
       //if that is the case, it means a small leftover of total stable debt is left, which can be erased.
       if (expectedReserveData.averageStableBorrowRate.isNegative()) {
-        expectedReserveData.principalStableDebt = expectedReserveData.totalStableDebt = expectedReserveData.averageStableBorrowRate = Zero;
+        expectedReserveData.principalStableDebt =
+          expectedReserveData.totalStableDebt =
+          expectedReserveData.averageStableBorrowRate =
+            Zero;
       }
     }
 
@@ -480,13 +485,8 @@ export const calcExpectedUserDataAfterWithdraw = (
     txTimestamp
   );
   const currentVariableDebt = calcExpectedVariableDebtTokenBalance(reserveDataBefore, userDataBefore, txTimestamp);
-  const {
-    principalStableDebt,
-    scaledVariableDebt,
-    stableBorrowRate,
-    stableRateLastUpdated,
-    liquidityRate,
-  } = userDataBefore;
+  const {principalStableDebt, scaledVariableDebt, stableBorrowRate, stableRateLastUpdated, liquidityRate} =
+    userDataBefore;
 
   let usageAsCollateralEnabled = userDataBefore.usageAsCollateralEnabled;
   if (userDataBefore.currentATokenBalance.eq(0)) {

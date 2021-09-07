@@ -18,14 +18,8 @@ const calcUsdValue = function (
 
 describe('UniswapAdapter: getAmountsIn, getAmountsOut', () => {
   it('getAmountsOut: WETH-DAI', async () => {
-    const {
-      mockUniswapRouter,
-      uniswapLiquiditySwapAdapter,
-      asset,
-      priceOracle,
-      lendingPool,
-      marketConfig,
-    } = await setupFixture();
+    const {mockUniswapRouter, uniswapLiquiditySwapAdapter, asset, priceOracle, lendingPool, marketConfig} =
+      await setupFixture();
     const flashloanPremium = await lendingPool.FLASHLOAN_PREMIUM_TOTAL();
 
     const amountIn = parseEther('1');

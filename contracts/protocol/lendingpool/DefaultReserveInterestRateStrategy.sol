@@ -194,8 +194,9 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     );
 
     if (vars.utilizationRate > OPTIMAL_UTILIZATION_RATE) {
-      uint256 excessUtilizationRateRatio =
-        vars.utilizationRate.sub(OPTIMAL_UTILIZATION_RATE).rayDiv(EXCESS_UTILIZATION_RATE);
+      uint256 excessUtilizationRateRatio = vars.utilizationRate.sub(OPTIMAL_UTILIZATION_RATE).rayDiv(
+        EXCESS_UTILIZATION_RATE
+      );
 
       vars.currentStableBorrowRate = vars.currentStableBorrowRate.add(_stableRateSlope1).add(
         _stableRateSlope2.rayMul(excessUtilizationRateRatio)
@@ -216,12 +217,9 @@ contract DefaultReserveInterestRateStrategy is IReserveInterestRateStrategy {
     vars.currentLiquidityRate = _getOverallBorrowRate(
       totalStableDebt,
       totalVariableDebt,
-      vars
-        .currentVariableBorrowRate,
+      vars.currentVariableBorrowRate,
       averageStableBorrowRate
-    )
-      .rayMul(vars.utilizationRate)
-      .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(reserveFactor));
+    ).rayMul(vars.utilizationRate).percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(reserveFactor));
 
     return (vars.currentLiquidityRate, vars.currentStableBorrowRate, vars.currentVariableBorrowRate);
   }

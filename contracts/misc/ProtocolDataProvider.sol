@@ -67,8 +67,8 @@ contract ProtocolDataProvider {
       bool isFrozen
     )
   {
-    DataTypes.ReserveConfigurationMap memory configuration =
-      ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getConfiguration(asset);
+    DataTypes.ReserveConfigurationMap memory configuration = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
+      .getConfiguration(asset);
 
     (ltv, liquidationThreshold, liquidationBonus, decimals, reserveFactor) = configuration.getParamsMemory();
 
@@ -123,8 +123,9 @@ contract ProtocolDataProvider {
     )
   {
     DataTypes.ReserveData memory reserve = ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getReserveData(asset);
-    DefaultReserveInterestRateStrategy interestRateStrategy =
-      DefaultReserveInterestRateStrategy(reserve.interestRateStrategyAddress);
+    DefaultReserveInterestRateStrategy interestRateStrategy = DefaultReserveInterestRateStrategy(
+      reserve.interestRateStrategyAddress
+    );
 
     return (
       interestRateStrategy.OPTIMAL_UTILIZATION_RATE(),
@@ -154,8 +155,8 @@ contract ProtocolDataProvider {
   {
     DataTypes.ReserveData memory reserve = ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getReserveData(asset);
 
-    DataTypes.UserConfigurationMap memory userConfig =
-      ILendingPool(ADDRESSES_PROVIDER.getLendingPool()).getUserConfiguration(user);
+    DataTypes.UserConfigurationMap memory userConfig = ILendingPool(ADDRESSES_PROVIDER.getLendingPool())
+      .getUserConfiguration(user);
 
     currentATokenBalance = IERC20Detailed(reserve.aTokenAddress).balanceOf(user);
     currentVariableDebt = IERC20Detailed(reserve.variableDebtTokenAddress).balanceOf(user);

@@ -8,8 +8,8 @@
   ],
   "scripts": {
     "prepare": "node ./.setup.js && hardhat typechain",
-    "lint": "eslint \"**/*.{js,ts}\" && solhint src/**/*.sol",
-    "lint:fix": "eslint --fix \"**/*.{js,ts}\" && solhint --fix src/**/*.sol",
+    "lint": "eslint \"**/*.{js,ts}\" && solhint contracts/**/*.sol",
+    "lint:fix": "eslint --fix \"**/*.{js,ts}\" && solhint --fix contracts/**/*.sol",
     "format": "prettier --check \"**/*.{ts,js,sol}\"",
     "format:fix": "prettier --write \"**/*.{ts,js,sol}\"",
     "format:fix:ts": "prettier --write \"**/*.{ts,js}\"",
@@ -146,7 +146,7 @@
   },
   "husky": {
     "hooks": {
-      "pre-commit": "pretty-quick --staged --pattern 'contracts/**/*.sol' --pattern 'helpers/**/*.ts'  --pattern 'test-suites/test-aave/**/*.ts' --pattern 'tasks/**/*.ts'"
+      "pre-commit": "pretty-quick --staged --pattern 'contracts/**/*.sol' --pattern 'utils/**/*.ts'  --pattern 'test/**/*.ts' --pattern 'tasks/**/*.ts'"
     }
   },
   "author": "Aave",

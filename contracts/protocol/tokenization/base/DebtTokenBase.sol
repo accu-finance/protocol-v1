@@ -23,7 +23,7 @@ abstract contract DebtTokenBase is
   /**
    * @dev Only lending pool can call functions marked by this modifier
    **/
-  modifier onlyLendingPool {
+  modifier onlyLendingPool() {
     require(_msgSender() == address(_getLendingPool()), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
     _;
   }

@@ -145,8 +145,7 @@ export const initReserves = async (
 export const configureReserves = async (
   marketConfig: MarketConfiguration,
   poolAssetAddress: PoolAsset<Address>,
-  lendingPoolAddressProvider: AddressProvider,
-  chunkSize = 2
+  lendingPoolAddressProvider: AddressProvider
 ): Promise<void> => {
   const {reserveConfig, nativeCurrency} = marketConfig;
   const lendingPoolConfigurator = await getContractAt<LendingPoolConfigurator>(
@@ -157,13 +156,8 @@ export const configureReserves = async (
   const inputs: ConfigReserveInput[] = [];
 
   for (const assetId of enumKeys(poolAssetAddress)) {
-    const {
-      baseLTVAsCollateral,
-      liquidationBonus,
-      liquidationThreshold,
-      reserveFactor,
-      stableBorrowRateEnabled,
-    } = reserveConfig[assetId];
+    const {baseLTVAsCollateral, liquidationBonus, liquidationThreshold, reserveFactor, stableBorrowRateEnabled} =
+      reserveConfig[assetId];
 
     inputs.push({
       assetId,

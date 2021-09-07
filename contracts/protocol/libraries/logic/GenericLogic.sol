@@ -105,12 +105,11 @@ library GenericLogic {
       .sub(vars.amountToDecreaseInNativeCurrency.mul(vars.liquidationThreshold))
       .div(vars.collateralBalanceAfterDecrease);
 
-    uint256 healthFactorAfterDecrease =
-      calculateHealthFactorFromBalances(
-        vars.collateralBalanceAfterDecrease,
-        vars.totalDebtInNativeCurrency,
-        vars.liquidationThresholdAfterDecrease
-      );
+    uint256 healthFactorAfterDecrease = calculateHealthFactorFromBalances(
+      vars.collateralBalanceAfterDecrease,
+      vars.totalDebtInNativeCurrency,
+      vars.liquidationThresholdAfterDecrease
+    );
 
     return healthFactorAfterDecrease >= GenericLogic.HEALTH_FACTOR_LIQUIDATION_THRESHOLD;
   }
@@ -186,8 +185,9 @@ library GenericLogic {
       if (vars.liquidationThreshold != 0 && userConfig.isUsingAsCollateral(vars.i)) {
         vars.compoundedLiquidityBalance = IERC20(currentReserve.aTokenAddress).balanceOf(user);
 
-        uint256 liquidityBalanceInNativeCurrency =
-          vars.reserveUnitPrice.mul(vars.compoundedLiquidityBalance).div(vars.tokenUnit);
+        uint256 liquidityBalanceInNativeCurrency = vars.reserveUnitPrice.mul(vars.compoundedLiquidityBalance).div(
+          vars.tokenUnit
+        );
 
         vars.totalCollateralInNativeCurrency = vars.totalCollateralInNativeCurrency.add(
           liquidityBalanceInNativeCurrency

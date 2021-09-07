@@ -63,8 +63,9 @@ library ReserveLogic {
       return reserve.liquidityIndex;
     }
 
-    uint256 cumulated =
-      MathUtils.calculateLinearInterest(reserve.currentLiquidityRate, timestamp).rayMul(reserve.liquidityIndex);
+    uint256 cumulated = MathUtils.calculateLinearInterest(reserve.currentLiquidityRate, timestamp).rayMul(
+      reserve.liquidityIndex
+    );
 
     return cumulated;
   }
@@ -85,10 +86,9 @@ library ReserveLogic {
       return reserve.variableBorrowIndex;
     }
 
-    uint256 cumulated =
-      MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp).rayMul(
-        reserve.variableBorrowIndex
-      );
+    uint256 cumulated = MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp).rayMul(
+      reserve.variableBorrowIndex
+    );
 
     return cumulated;
   }
@@ -103,14 +103,13 @@ library ReserveLogic {
     uint256 previousLiquidityIndex = reserve.liquidityIndex;
     uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
 
-    (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) =
-      _updateIndexes(
-        reserve,
-        scaledVariableDebt,
-        previousLiquidityIndex,
-        previousVariableBorrowIndex,
-        lastUpdatedTimestamp
-      );
+    (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) = _updateIndexes(
+      reserve,
+      scaledVariableDebt,
+      previousLiquidityIndex,
+      previousVariableBorrowIndex,
+      lastUpdatedTimestamp
+    );
 
     _mintToTreasury(
       reserve,
@@ -206,19 +205,17 @@ library ReserveLogic {
     );
 
     (vars.newLiquidityRate, vars.newStableRate, vars.newVariableRate) = IReserveInterestRateStrategy(
-      reserve
-        .interestRateStrategyAddress
-    )
-      .calculateInterestRates(
-      reserveAddress,
-      aTokenAddress,
-      liquidityAdded,
-      liquidityTaken,
-      vars.totalStableDebt,
-      vars.totalVariableDebt,
-      vars.avgStableRate,
-      reserve.configuration.getReserveFactor()
-    );
+      reserve.interestRateStrategyAddress
+    ).calculateInterestRates(
+        reserveAddress,
+        aTokenAddress,
+        liquidityAdded,
+        liquidityTaken,
+        vars.totalStableDebt,
+        vars.totalVariableDebt,
+        vars.avgStableRate,
+        reserve.configuration.getReserveFactor()
+      );
     require(vars.newLiquidityRate <= type(uint128).max, Errors.RL_LIQUIDITY_RATE_OVERFLOW);
     require(vars.newStableRate <= type(uint128).max, Errors.RL_STABLE_BORROW_RATE_OVERFLOW);
     require(vars.newVariableRate <= type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
@@ -341,8 +338,10 @@ library ReserveLogic {
       //as the liquidity rate might come only from stable rate loans, we need to ensure
       //that there is actual variable debt before accumulating
       if (scaledVariableDebt != 0) {
-        uint256 cumulatedVariableBorrowInterest =
-          MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);
+        uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
+          reserve.currentVariableBorrowRate,
+          timestamp
+        );
         newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
         require(newVariableBorrowIndex <= type(uint128).max, Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW);
         reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);

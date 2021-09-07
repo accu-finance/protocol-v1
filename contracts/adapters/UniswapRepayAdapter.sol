@@ -100,10 +100,9 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
     DataTypes.ReserveData memory collateralReserveData = _getReserveData(collateralAsset);
     DataTypes.ReserveData memory debtReserveData = _getReserveData(debtAsset);
 
-    address debtToken =
-      DataTypes.InterestRateMode(debtRateMode) == DataTypes.InterestRateMode.STABLE
-        ? debtReserveData.stableDebtTokenAddress
-        : debtReserveData.variableDebtTokenAddress;
+    address debtToken = DataTypes.InterestRateMode(debtRateMode) == DataTypes.InterestRateMode.STABLE
+      ? debtReserveData.stableDebtTokenAddress
+      : debtReserveData.variableDebtTokenAddress;
 
     uint256 currentDebt = IERC20(debtToken).balanceOf(msg.sender);
     uint256 amountToRepay = debtRepayAmount <= currentDebt ? debtRepayAmount : currentDebt;

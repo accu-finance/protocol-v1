@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {DebtTokenBase} from './base/DebtTokenBase.sol';
-import {MathUtils} from '../libraries/math/MathUtils.sol';
-import {WadRayMath} from '../libraries/math/WadRayMath.sol';
-import {IStableDebtToken} from '../../interfaces/IStableDebtToken.sol';
-import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
-import {Errors} from '../libraries/helpers/Errors.sol';
+import {DebtTokenBase} from "./base/DebtTokenBase.sol";
+import {MathUtils} from "../libraries/math/MathUtils.sol";
+import {WadRayMath} from "../libraries/math/WadRayMath.sol";
+import {IStableDebtToken} from "../../interfaces/IStableDebtToken.sol";
+import {ILendingPool} from "../../interfaces/ILendingPool.sol";
+import {IAaveIncentivesController} from "../../interfaces/IAaveIncentivesController.sol";
+import {Errors} from "../libraries/helpers/Errors.sol";
 
 /**
  * @title StableDebtToken
@@ -109,8 +109,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     if (accountBalance == 0) {
       return 0;
     }
-    uint256 cumulatedInterest =
-      MathUtils.calculateCompoundedInterest(stableRate, _timestamps[account]);
+    uint256 cumulatedInterest = MathUtils.calculateCompoundedInterest(stableRate, _timestamps[account]);
     return accountBalance.rayMul(cumulatedInterest);
   }
 
@@ -279,11 +278,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
     // Calculation of the accrued interest since the last accumulation
     uint256 balanceIncrease = balanceOf(user).sub(previousPrincipalBalance);
 
-    return (
-      previousPrincipalBalance,
-      previousPrincipalBalance.add(balanceIncrease),
-      balanceIncrease
-    );
+    return (previousPrincipalBalance, previousPrincipalBalance.add(balanceIncrease), balanceIncrease);
   }
 
   /**
@@ -389,8 +384,7 @@ contract StableDebtToken is IStableDebtToken, DebtTokenBase {
       return 0;
     }
 
-    uint256 cumulatedInterest =
-      MathUtils.calculateCompoundedInterest(avgRate, _totalSupplyTimestamp);
+    uint256 cumulatedInterest = MathUtils.calculateCompoundedInterest(avgRate, _totalSupplyTimestamp);
 
     return principalSupply.rayMul(cumulatedInterest);
   }

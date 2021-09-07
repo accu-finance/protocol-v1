@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
-import {ILendingPool} from '../../interfaces/ILendingPool.sol';
+import {IAddressProvider} from "../../interfaces/IAddressProvider.sol";
+import {ILendingPool} from "../../interfaces/ILendingPool.sol";
 
 /**
  * @title IFlashLoanReceiver interface
@@ -19,7 +19,7 @@ interface IFlashLoanReceiver {
     bytes calldata params
   ) external returns (bool);
 
-  function ADDRESSES_PROVIDER() external view returns (ILendingPoolAddressesProvider);
+  function ADDRESSES_PROVIDER() external view returns (IAddressProvider);
 
   function LENDING_POOL() external view returns (ILendingPool);
 }

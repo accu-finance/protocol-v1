@@ -2,11 +2,11 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {BaseUniswapAdapter} from './BaseUniswapAdapter.sol';
-import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
-import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
-import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
-import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
+import {BaseUniswapAdapter} from "./BaseUniswapAdapter.sol";
+import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
+import {IUniswapV2Router02} from "../interfaces/IUniswapV2Router02.sol";
+import {IERC20} from "../dependencies/openzeppelin/contracts/IERC20.sol";
+import {DataTypes} from "../protocol/libraries/types/DataTypes.sol";
 
 /**
  * @title UniswapRepayAdapter
@@ -23,10 +23,10 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
   }
 
   constructor(
-    ILendingPoolAddressesProvider addressesProvider,
+    IAddressProvider addressProvider,
     IUniswapV2Router02 uniswapRouter,
     address wethAddress
-  ) public BaseUniswapAdapter(addressesProvider, uniswapRouter, wethAddress) {}
+  ) public BaseUniswapAdapter(addressProvider, uniswapRouter, wethAddress) {}
 
   /**
    * @dev Uses the received funds from the flash loan to repay a debt on the protocol on behalf of the user. Then pulls
@@ -55,7 +55,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
     address initiator,
     bytes calldata params
   ) external override returns (bool) {
-    require(msg.sender == address(LENDING_POOL), 'CALLER_MUST_BE_LENDING_POOL');
+    require(msg.sender == address(LENDING_POOL), "CALLER_MUST_BE_LENDING_POOL");
 
     RepayParams memory decodedParams = _decodeParams(params);
 
@@ -115,30 +115,17 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       }
 
       // Get exact collateral needed for the swap to avoid leftovers
-      uint256[] memory amounts =
-        _getAmountsIn(collateralAsset, debtAsset, amountToRepay, useEthPath);
-      require(amounts[0] <= maxCollateralToSwap, 'slippage too high');
+      uint256[] memory amounts = _getAmountsIn(collateralAsset, debtAsset, amountToRepay, useEthPath);
+      require(amounts[0] <= maxCollateralToSwap, "slippage too high");
 
       // Pull aTokens from user
-      _pullAToken(
-        collateralAsset,
-        collateralReserveData.aTokenAddress,
-        msg.sender,
-        amounts[0],
-        permitSignature
-      );
+      _pullAToken(collateralAsset, collateralReserveData.aTokenAddress, msg.sender, amounts[0], permitSignature);
 
       // Swap collateral for debt asset
       _swapTokensForExactTokens(collateralAsset, debtAsset, amounts[0], amountToRepay, useEthPath);
     } else {
       // Pull aTokens from user
-      _pullAToken(
-        collateralAsset,
-        collateralReserveData.aTokenAddress,
-        msg.sender,
-        amountToRepay,
-        permitSignature
-      );
+      _pullAToken(collateralAsset, collateralReserveData.aTokenAddress, msg.sender, amountToRepay, permitSignature);
     }
 
     // Repay debt. Approves 0 first to comply with tokens that implement the anti frontrunning approval fix
@@ -186,27 +173,14 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       }
 
       uint256 neededForFlashLoanDebt = repaidAmount.add(premium);
-      uint256[] memory amounts =
-        _getAmountsIn(collateralAsset, debtAsset, neededForFlashLoanDebt, useEthPath);
-      require(amounts[0] <= maxCollateralToSwap, 'slippage too high');
+      uint256[] memory amounts = _getAmountsIn(collateralAsset, debtAsset, neededForFlashLoanDebt, useEthPath);
+      require(amounts[0] <= maxCollateralToSwap, "slippage too high");
 
       // Pull aTokens from user
-      _pullAToken(
-        collateralAsset,
-        collateralReserveData.aTokenAddress,
-        initiator,
-        amounts[0],
-        permitSignature
-      );
+      _pullAToken(collateralAsset, collateralReserveData.aTokenAddress, initiator, amounts[0], permitSignature);
 
       // Swap collateral asset to the debt asset
-      _swapTokensForExactTokens(
-        collateralAsset,
-        debtAsset,
-        amounts[0],
-        neededForFlashLoanDebt,
-        useEthPath
-      );
+      _swapTokensForExactTokens(collateralAsset, debtAsset, amounts[0], neededForFlashLoanDebt, useEthPath);
     } else {
       // Pull aTokens from user
       _pullAToken(
@@ -248,11 +222,7 @@ contract UniswapRepayAdapter is BaseUniswapAdapter {
       bytes32 r,
       bytes32 s,
       bool useEthPath
-    ) =
-      abi.decode(
-        params,
-        (address, uint256, uint256, uint256, uint256, uint8, bytes32, bytes32, bool)
-      );
+    ) = abi.decode(params, (address, uint256, uint256, uint256, uint256, uint8, bytes32, bytes32, bool));
 
     return
       RepayParams(

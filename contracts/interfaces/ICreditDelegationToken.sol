@@ -2,12 +2,7 @@
 pragma solidity 0.6.12;
 
 interface ICreditDelegationToken {
-  event BorrowAllowanceDelegated(
-    address indexed fromUser,
-    address indexed toUser,
-    address asset,
-    uint256 amount
-  );
+  event BorrowAllowanceDelegated(address indexed fromUser, address indexed toUser, address asset, uint256 amount);
 
   /**
    * @dev delegates borrowing power to a user on the specific debt token

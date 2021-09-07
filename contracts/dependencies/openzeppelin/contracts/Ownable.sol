@@ -2,7 +2,7 @@
 
 pragma solidity ^0.6.0;
 
-import './Context.sol';
+import "./Context.sol";
 
 /**
  * @dev Contract module which provides a basic access control mechanism, where
@@ -41,7 +41,7 @@ contract Ownable is Context {
    * @dev Throws if called by any account other than the owner.
    */
   modifier onlyOwner() {
-    require(_owner == _msgSender(), 'Ownable: caller is not the owner');
+    require(_owner == _msgSender(), "Ownable: caller is not the owner");
     _;
   }
 
@@ -62,7 +62,7 @@ contract Ownable is Context {
    * Can only be called by the current owner.
    */
   function transferOwnership(address newOwner) public virtual onlyOwner {
-    require(newOwner != address(0), 'Ownable: new owner is the zero address');
+    require(newOwner != address(0), "Ownable: new owner is the zero address");
     emit OwnershipTransferred(_owner, newOwner);
     _owner = newOwner;
   }

@@ -147,11 +147,7 @@ interface ILendingPoolConfigurator {
    * @param proxy The aToken proxy address
    * @param implementation The new aToken implementation
    **/
-  event ATokenUpgraded(
-    address indexed asset,
-    address indexed proxy,
-    address indexed implementation
-  );
+  event ATokenUpgraded(address indexed asset, address indexed proxy, address indexed implementation);
 
   /**
    * @dev Emitted when the implementation of a stable debt token is upgraded
@@ -159,11 +155,7 @@ interface ILendingPoolConfigurator {
    * @param proxy The stable debt token proxy address
    * @param implementation The new aToken implementation
    **/
-  event StableDebtTokenUpgraded(
-    address indexed asset,
-    address indexed proxy,
-    address indexed implementation
-  );
+  event StableDebtTokenUpgraded(address indexed asset, address indexed proxy, address indexed implementation);
 
   /**
    * @dev Emitted when the implementation of a variable debt token is upgraded
@@ -171,9 +163,5 @@ interface ILendingPoolConfigurator {
    * @param proxy The variable debt token proxy address
    * @param implementation The new aToken implementation
    **/
-  event VariableDebtTokenUpgraded(
-    address indexed asset,
-    address indexed proxy,
-    address indexed implementation
-  );
+  event VariableDebtTokenUpgraded(address indexed asset, address indexed proxy, address indexed implementation);
 }

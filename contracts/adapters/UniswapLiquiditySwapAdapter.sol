@@ -2,10 +2,10 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {BaseUniswapAdapter} from './BaseUniswapAdapter.sol';
-import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
-import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
-import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {BaseUniswapAdapter} from "./BaseUniswapAdapter.sol";
+import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
+import {IUniswapV2Router02} from "../interfaces/IUniswapV2Router02.sol";
+import {IERC20} from "../dependencies/openzeppelin/contracts/IERC20.sol";
 
 /**
  * @title UniswapLiquiditySwapAdapter
@@ -30,10 +30,10 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
   }
 
   constructor(
-    ILendingPoolAddressesProvider addressesProvider,
+    IAddressProvider addressProvider,
     IUniswapV2Router02 uniswapRouter,
     address wethAddress
-  ) public BaseUniswapAdapter(addressesProvider, uniswapRouter, wethAddress) {}
+  ) public BaseUniswapAdapter(addressProvider, uniswapRouter, wethAddress) {}
 
   /**
    * @dev Swaps the received reserve amount from the flash loan into the asset specified in the params.
@@ -61,7 +61,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
     address initiator,
     bytes calldata params
   ) external override returns (bool) {
-    require(msg.sender == address(LENDING_POOL), 'CALLER_MUST_BE_LENDING_POOL');
+    require(msg.sender == address(LENDING_POOL), "CALLER_MUST_BE_LENDING_POOL");
 
     SwapParams memory decodedParams = _decodeParams(params);
 
@@ -75,7 +75,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
         assets.length == decodedParams.permitParams.r.length &&
         assets.length == decodedParams.permitParams.s.length &&
         assets.length == decodedParams.useEthPath.length,
-      'INCONSISTENT_PARAMS'
+      "INCONSISTENT_PARAMS"
     );
 
     for (uint256 i = 0; i < assets.length; i++) {
@@ -140,7 +140,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
         assetToSwapFromList.length == amountToSwapList.length &&
         assetToSwapFromList.length == minAmountsToReceive.length &&
         assetToSwapFromList.length == permitParams.length,
-      'INCONSISTENT_PARAMS'
+      "INCONSISTENT_PARAMS"
     );
 
     SwapAndDepositLocalVars memory vars;
@@ -153,13 +153,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
         ? vars.aTokenInitiatorBalance
         : amountToSwapList[vars.i];
 
-      _pullAToken(
-        assetToSwapFromList[vars.i],
-        vars.aToken,
-        msg.sender,
-        vars.amountToSwap,
-        permitParams[vars.i]
-      );
+      _pullAToken(assetToSwapFromList[vars.i], vars.aToken, msg.sender, vars.amountToSwap, permitParams[vars.i]);
 
       vars.receivedAmount = _swapExactTokensForTokens(
         assetToSwapFromList[vars.i],
@@ -265,11 +259,7 @@ contract UniswapLiquiditySwapAdapter is BaseUniswapAdapter {
       bytes32[] memory r,
       bytes32[] memory s,
       bool[] memory useEthPath
-    ) =
-      abi.decode(
-        params,
-        (address[], uint256[], bool[], uint256[], uint256[], uint8[], bytes32[], bytes32[], bool[])
-      );
+    ) = abi.decode(params, (address[], uint256[], bool[], uint256[], uint256[], uint8[], bytes32[], bytes32[], bool[]));
 
     return
       SwapParams(

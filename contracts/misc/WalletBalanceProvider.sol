@@ -3,14 +3,14 @@ pragma solidity 0.6.12;
 
 pragma experimental ABIEncoderV2;
 
-import {Address} from '../dependencies/openzeppelin/contracts/Address.sol';
-import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
+import {Address} from "../dependencies/openzeppelin/contracts/Address.sol";
+import {IERC20} from "../dependencies/openzeppelin/contracts/IERC20.sol";
 
-import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
-import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
-import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
+import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
+import {ILendingPool} from "../interfaces/ILendingPool.sol";
+import {SafeERC20} from "../dependencies/openzeppelin/contracts/SafeERC20.sol";
+import {ReserveConfiguration} from "../protocol/libraries/configuration/ReserveConfiguration.sol";
+import {DataTypes} from "../protocol/libraries/types/DataTypes.sol";
 
 /**
  * @title WalletBalanceProvider contract
@@ -32,7 +32,7 @@ contract WalletBalanceProvider {
     **/
   receive() external payable {
     //only contracts can send ETH to the core
-    require(msg.sender.isContract(), '22');
+    require(msg.sender.isContract(), "22");
   }
 
   /**
@@ -48,7 +48,7 @@ contract WalletBalanceProvider {
     } else if (token.isContract()) {
       return IERC20(token).balanceOf(user);
     }
-    revert('INVALID_TOKEN');
+    revert("INVALID_TOKEN");
   }
 
   /**
@@ -81,7 +81,7 @@ contract WalletBalanceProvider {
     view
     returns (address[] memory, uint256[] memory)
   {
-    ILendingPool pool = ILendingPool(ILendingPoolAddressesProvider(provider).getLendingPool());
+    ILendingPool pool = ILendingPool(IAddressProvider(provider).getLendingPool());
 
     address[] memory reserves = pool.getReservesList();
     address[] memory reservesWithEth = new address[](reserves.length + 1);
@@ -93,8 +93,7 @@ contract WalletBalanceProvider {
     uint256[] memory balances = new uint256[](reservesWithEth.length);
 
     for (uint256 j = 0; j < reserves.length; j++) {
-      DataTypes.ReserveConfigurationMap memory configuration =
-        pool.getConfiguration(reservesWithEth[j]);
+      DataTypes.ReserveConfigurationMap memory configuration = pool.getConfiguration(reservesWithEth[j]);
 
       (bool isActive, , , ) = configuration.getFlagsMemory();
 

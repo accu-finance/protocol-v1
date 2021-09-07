@@ -2,16 +2,16 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
-import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IWETH} from './interfaces/IWETH.sol';
-import {IWETHGateway} from './interfaces/IWETHGateway.sol';
-import {ILendingPool} from '../interfaces/ILendingPool.sol';
-import {IAToken} from '../interfaces/IAToken.sol';
-import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
-import {UserConfiguration} from '../protocol/libraries/configuration/UserConfiguration.sol';
-import {Helpers} from '../protocol/libraries/helpers/Helpers.sol';
-import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
+import {Ownable} from "../dependencies/openzeppelin/contracts/Ownable.sol";
+import {IERC20} from "../dependencies/openzeppelin/contracts/IERC20.sol";
+import {IWETH} from "./interfaces/IWETH.sol";
+import {IWETHGateway} from "./interfaces/IWETHGateway.sol";
+import {ILendingPool} from "../interfaces/ILendingPool.sol";
+import {IAToken} from "../interfaces/IAToken.sol";
+import {ReserveConfiguration} from "../protocol/libraries/configuration/ReserveConfiguration.sol";
+import {UserConfiguration} from "../protocol/libraries/configuration/UserConfiguration.sol";
+import {Helpers} from "../protocol/libraries/helpers/Helpers.sol";
+import {DataTypes} from "../protocol/libraries/types/DataTypes.sol";
 
 contract WETHGateway is IWETHGateway, Ownable {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
@@ -20,7 +20,7 @@ contract WETHGateway is IWETHGateway, Ownable {
   IWETH internal immutable WETH;
 
   /**
-   * @dev Sets the WETH address and the LendingPoolAddressesProvider address. Infinite approves lending pool.
+   * @dev Sets the WETH address and the AddressProvider address. Infinite approves lending pool.
    * @param weth Address of the Wrapped Ether contract
    **/
   constructor(address weth) public {
@@ -86,20 +86,15 @@ contract WETHGateway is IWETHGateway, Ownable {
     address onBehalfOf
   ) external payable override {
     (uint256 stableDebt, uint256 variableDebt) =
-      Helpers.getUserCurrentDebtMemory(
-        onBehalfOf,
-        ILendingPool(lendingPool).getReserveData(address(WETH))
-      );
+      Helpers.getUserCurrentDebtMemory(onBehalfOf, ILendingPool(lendingPool).getReserveData(address(WETH)));
 
     uint256 paybackAmount =
-      DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE
-        ? stableDebt
-        : variableDebt;
+      DataTypes.InterestRateMode(rateMode) == DataTypes.InterestRateMode.STABLE ? stableDebt : variableDebt;
 
     if (amount < paybackAmount) {
       paybackAmount = amount;
     }
-    require(msg.value >= paybackAmount, 'msg.value is less than repayment amount');
+    require(msg.value >= paybackAmount, "msg.value is less than repayment amount");
     WETH.deposit{value: paybackAmount}();
     ILendingPool(lendingPool).repay(address(WETH), msg.value, rateMode, onBehalfOf);
 
@@ -120,13 +115,7 @@ contract WETHGateway is IWETHGateway, Ownable {
     uint256 interesRateMode,
     uint16 referralCode
   ) external override {
-    ILendingPool(lendingPool).borrow(
-      address(WETH),
-      amount,
-      interesRateMode,
-      referralCode,
-      msg.sender
-    );
+    ILendingPool(lendingPool).borrow(address(WETH), amount, interesRateMode, referralCode, msg.sender);
     WETH.withdraw(amount);
     _safeTransferETH(msg.sender, amount);
   }
@@ -138,7 +127,7 @@ contract WETHGateway is IWETHGateway, Ownable {
    */
   function _safeTransferETH(address to, uint256 value) internal {
     (bool success, ) = to.call{value: value}(new bytes(0));
-    require(success, 'ETH_TRANSFER_FAILED');
+    require(success, "ETH_TRANSFER_FAILED");
   }
 
   /**
@@ -177,13 +166,13 @@ contract WETHGateway is IWETHGateway, Ownable {
    * @dev Only WETH contract is allowed to transfer ETH here. Prevent other addresses to send Ether to this contract.
    */
   receive() external payable {
-    require(msg.sender == address(WETH), 'Receive not allowed');
+    require(msg.sender == address(WETH), "Receive not allowed");
   }
 
   /**
    * @dev Revert fallback calls
    */
   fallback() external payable {
-    revert('Fallback not allowed');
+    revert("Fallback not allowed");
   }
 }

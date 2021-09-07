@@ -10,12 +10,12 @@ import {StringLib} from './StringLib.sol';
 
 contract StableAndVariableTokensHelper is Ownable {
   address payable private pool;
-  address private addressesProvider;
+  address private addressProvider;
   event deployedContracts(address stableToken, address variableToken);
 
-  constructor(address payable _pool, address _addressesProvider) public {
+  constructor(address payable _pool, address _addressProvider) public {
     pool = _pool;
-    addressesProvider = _addressesProvider;
+    addressProvider = _addressProvider;
   }
 
   function initDeployment(address[] calldata tokens, string[] calldata symbols) external onlyOwner {

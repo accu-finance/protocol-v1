@@ -1,18 +1,26 @@
 .env
-#Buidler files
-cache
-artifacts
-node_modules
+cache/
+artifacts/
+typechain/
+node_modules/
 dist/
 build/
-.vscode
-.idea
-/types
 
 deployed-contracts.json
 
-coverage
+coverage*
 .coverage_artifacts
 .coverage_cache
 .coverage_contracts
 
+contractsInfo.json
+deployments/hardhat
+deployments/localhost
+
+tenderly.yaml
+
+.idea
+.vscode/*
+!.vscode/settings.json.default
+!.vscode/launch.json.default
+!.vscode/extensions.json.default

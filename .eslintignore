@@ -6,3 +6,7 @@ coverage/
 node_modules/
 package.json
 typechain/
+
+
+test-suites/
+tasks/

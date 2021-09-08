@@ -9,4 +9,5 @@ module.exports = {
   providerOptions: {
     accounts,
   },
+  configureYulOptimizer: true,
 };

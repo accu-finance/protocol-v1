@@ -1,6 +1,5 @@
 import {BigNumberish} from 'ethers';
-import hre, {deployments, getNamedAccounts} from 'hardhat';
-import {Libraries} from 'hardhat/types';
+import {HardhatRuntimeEnvironment, Libraries} from 'hardhat/types';
 import {
   AddressProvider,
   AToken,
@@ -58,12 +57,16 @@ import {
 import {enumKeys} from './index';
 import registerContractInJsonDb from './registerContractInJsonDb';
 
-const {deploy} = deployments;
-
 export const deployMintableERC20 = async (
+  hre: HardhatRuntimeEnvironment,
   assetId: string,
   args: [string, string, number]
 ): Promise<MockMintableERC20> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.MockMintableERC20;
   const result = await deploy(assetId, {
@@ -72,12 +75,21 @@ export const deployMintableERC20 = async (
     args,
   });
   console.log(`${assetId}:\t ${result.address}`);
-  await registerContractInJsonDb(ContractType.Asset, assetId, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Asset, assetId, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployMockWETH = async (assetId: string, assetName?: string): Promise<MockWETH9> => {
+export const deployMockWETH = async (
+  hre: HardhatRuntimeEnvironment,
+  assetId: string,
+  assetName?: string
+): Promise<MockWETH9> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.MockWETH;
   const result = await deploy(assetId, {
@@ -85,12 +97,21 @@ export const deployMockWETH = async (assetId: string, assetName?: string): Promi
     contract,
   });
   console.log(`${assetName || assetId}:\t ${result.address}`);
-  await registerContractInJsonDb(ContractType.Asset, assetId, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Asset, assetId, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployMockWBNB = async (assetId: string, assetName?: string): Promise<MockWBNB9> => {
+export const deployMockWBNB = async (
+  hre: HardhatRuntimeEnvironment,
+  assetId: string,
+  assetName?: string
+): Promise<MockWBNB9> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.MockWBNB;
   const result = await deploy(assetId, {
@@ -98,12 +119,20 @@ export const deployMockWBNB = async (assetId: string, assetName?: string): Promi
     contract,
   });
   console.log(`${assetName || assetId}:\t ${result.address}`);
-  await registerContractInJsonDb(ContractType.Asset, assetId, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Asset, assetId, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployAddressProvider = async (marketId: string): Promise<AddressProvider> => {
+export const deployAddressProvider = async (
+  hre: HardhatRuntimeEnvironment,
+  marketId: string
+): Promise<AddressProvider> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.AddressProvider;
   const result = await deploy(contract, {
@@ -113,12 +142,17 @@ export const deployAddressProvider = async (marketId: string): Promise<AddressPr
   });
 
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployProviderRegistry = async (): Promise<ProviderRegistry> => {
+export const deployProviderRegistry = async (hre: HardhatRuntimeEnvironment): Promise<ProviderRegistry> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.ProviderRegistry;
   const result = await deploy(contract, {
@@ -126,18 +160,23 @@ export const deployProviderRegistry = async (): Promise<ProviderRegistry> => {
     contract,
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployLendingPool = async (id?: string): Promise<LendingPool> => {
+export const deployLendingPool = async (hre: HardhatRuntimeEnvironment, id?: string): Promise<LendingPool> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.LendingPool;
 
-  const reserveLogicLib = await deployReserveLogicLibrary();
-  const genericLogicLib = await deployGenericLogicLibrary(reserveLogicLib.address);
-  const validationLogicLib = await deployValidationLogicLibrary(reserveLogicLib.address, genericLogicLib.address);
+  const reserveLogicLib = await deployReserveLogicLibrary(hre);
+  const genericLogicLib = await deployGenericLogicLibrary(hre, reserveLogicLib.address);
+  const validationLogicLib = await deployValidationLogicLibrary(hre, reserveLogicLib.address, genericLogicLib.address);
   const libraries: Libraries = {
     [ContractId.ReserveLogic]: reserveLogicLib.address,
     [ContractId.GenericLogic]: genericLogicLib.address,
@@ -151,12 +190,19 @@ export const deployLendingPool = async (id?: string): Promise<LendingPool> => {
     libraries,
   });
   console.log(`${ContractId.LendingPoolImpl}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, ContractId.LendingPoolImpl, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, ContractId.LendingPoolImpl, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployLendingPoolConfigurator = async (): Promise<LendingPoolConfigurator> => {
+export const deployLendingPoolConfigurator = async (
+  hre: HardhatRuntimeEnvironment
+): Promise<LendingPoolConfigurator> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.LendingPoolConfigurator;
   const result = await deploy(ContractId.LendingPoolConfigurator, {
@@ -164,17 +210,17 @@ export const deployLendingPoolConfigurator = async (): Promise<LendingPoolConfig
     contract,
   });
   console.log(`${ContractId.LendingPoolConfiguratorImpl}: ${result.address}`);
-  await registerContractInJsonDb(
-    ContractType.Protocol,
-    ContractId.LendingPoolConfiguratorImpl,
-    hre.network.name,
-    result
-  );
+  await registerContractInJsonDb(ContractType.Protocol, ContractId.LendingPoolConfiguratorImpl, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployReserveLogicLibrary = async (): Promise<ReserveLogic> => {
+export const deployReserveLogicLibrary = async (hre: HardhatRuntimeEnvironment): Promise<ReserveLogic> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.ReserveLogic;
   const result = await deploy(contract, {
@@ -182,12 +228,20 @@ export const deployReserveLogicLibrary = async (): Promise<ReserveLogic> => {
     contract,
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployGenericLogicLibrary = async (reserveLogicLibAddress: string): Promise<GenericLogic> => {
+export const deployGenericLogicLibrary = async (
+  hre: HardhatRuntimeEnvironment,
+  reserveLogicLibAddress: string
+): Promise<GenericLogic> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.GenericLogic;
   const result = await deploy(contract, {
@@ -198,15 +252,21 @@ export const deployGenericLogicLibrary = async (reserveLogicLibAddress: string):
     },
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
 export const deployValidationLogicLibrary = async (
+  hre: HardhatRuntimeEnvironment,
   reserveLogicLibAddress: string,
   genericLogicLibAddress: string
 ): Promise<ValidationLogic> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.ValidationLogic;
   const result = await deploy(ContractId.ValidationLogic, {
@@ -218,15 +278,21 @@ export const deployValidationLogicLibrary = async (
     },
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
 export const deployStableAndVariableTokenHelper = async (
+  hre: HardhatRuntimeEnvironment,
   pool: Address,
   addressProvider: Address
 ): Promise<StableAndVariableTokensHelper> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.StableAndVariableTokensHelper;
   const result = await deploy(contract, {
@@ -235,16 +301,22 @@ export const deployStableAndVariableTokenHelper = async (
     args: [pool, addressProvider],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
 export const deployATokensAndRatesHelper = async (
+  hre: HardhatRuntimeEnvironment,
   pool: Address,
   addressProvider: Address,
   poolConfigurator: Address
 ): Promise<ATokensAndRatesHelper> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.ATokensAndRatesHelper;
   const result = await deploy(contract, {
@@ -253,12 +325,17 @@ export const deployATokensAndRatesHelper = async (
     args: [pool, addressProvider, poolConfigurator],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployMockPriceOracle = async (): Promise<MockPriceOracle> => {
+export const deployMockPriceOracle = async (hre: HardhatRuntimeEnvironment): Promise<MockPriceOracle> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.MockPriceOracle;
   const result = await deploy(contract, {
@@ -266,12 +343,21 @@ export const deployMockPriceOracle = async (): Promise<MockPriceOracle> => {
     contract,
   });
   console.log(`${contract}:\t ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployMockChainlinkAggregator = async (tokenId: AssetId, price: BigNumberish): Promise<MockAggregator> => {
+export const deployMockChainlinkAggregator = async (
+  hre: HardhatRuntimeEnvironment,
+  tokenId: AssetId,
+  price: BigNumberish
+): Promise<MockAggregator> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const name = `${ContractId.MockChainlinkAggregator}-${tokenId}`;
   const contract = ContractId.MockChainlinkAggregator;
@@ -281,18 +367,19 @@ export const deployMockChainlinkAggregator = async (tokenId: AssetId, price: Big
     args: [price],
   });
   console.log(`${name}:\t ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, name, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, name, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
 export const deployAllMockChainlinkAggregators = async (
+  hre: HardhatRuntimeEnvironment,
   poolAsset: EthereumPoolAsset<BigNumberish> | BscPoolAsset<BigNumberish>
 ): Promise<PoolAsset<Address>> => {
   const aggregator: PoolAsset<Address> = {} as PoolAsset<Address>;
   for (const tokenId of enumKeys(poolAsset)) {
     const price = poolAsset[tokenId];
-    const result = await deployMockChainlinkAggregator(tokenId, price);
+    const result = await deployMockChainlinkAggregator(hre, tokenId, price);
     console.log(`${ContractId.MockChainlinkAggregator}-${tokenId}:\t${result.address}`);
     aggregator[tokenId] = result.address;
   }
@@ -301,9 +388,15 @@ export const deployAllMockChainlinkAggregators = async (
 };
 
 export const deployMockChainlinkPriceFeed = async (
+  hre: HardhatRuntimeEnvironment,
   assets: Address[],
   sources: Address[]
 ): Promise<MockChainlinkPriceFeed> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.MockChainlinkPriceFeed;
   const result = await deploy(contract, {
@@ -312,17 +405,23 @@ export const deployMockChainlinkPriceFeed = async (
     args: [assets, sources],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
 export const deployChainlinkPriceOracle = async (
+  hre: HardhatRuntimeEnvironment,
   assets: Address[],
   sources: Address[],
   fallbackOracle: Address,
   weth: Address
 ): Promise<ChainlinkPriceOracle> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.ChainlinkPriceOracle;
   const result = await deploy(contract, {
@@ -331,12 +430,17 @@ export const deployChainlinkPriceOracle = async (
     args: [assets, sources, fallbackOracle, weth],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployLendingRateOracle = async (): Promise<LendingRateOracle> => {
+export const deployLendingRateOracle = async (hre: HardhatRuntimeEnvironment): Promise<LendingRateOracle> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.LendingRateOracle;
   const result = await deploy(contract, {
@@ -344,12 +448,20 @@ export const deployLendingRateOracle = async (): Promise<LendingRateOracle> => {
     contract,
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployProtocolDataProvider = async (addressProvider: Address): Promise<ProtocolDataProvider> => {
+export const deployProtocolDataProvider = async (
+  hre: HardhatRuntimeEnvironment,
+  addressProvider: Address
+): Promise<ProtocolDataProvider> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.ProtocolDataProvider;
   const result = await deploy(contract, {
@@ -358,12 +470,20 @@ export const deployProtocolDataProvider = async (addressProvider: Address): Prom
     args: [addressProvider],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.DataProvider, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.DataProvider, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployAppDataProvider = async (addressProvider: Address): Promise<AppDataProvider> => {
+export const deployAppDataProvider = async (
+  hre: HardhatRuntimeEnvironment,
+  addressProvider: Address
+): Promise<AppDataProvider> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.AppDataProvider;
   const result = await deploy(contract, {
@@ -372,70 +492,109 @@ export const deployAppDataProvider = async (addressProvider: Address): Promise<A
     args: [addressProvider],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.DataProvider, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.DataProvider, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployStableDebtToken = async (assetId: AssetId, tokenName?: string): Promise<StableDebtToken> => {
+export const deployStableDebtToken = async (
+  hre: HardhatRuntimeEnvironment,
+  assetId: AssetId,
+  tokenName?: string
+): Promise<StableDebtToken> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
-  const {name, contract} = getStableDebtTokenContractName(assetId);
+  const {name, contract} = getStableDebtTokenContractName(hre, assetId);
   const result = await deploy(name, {
     from: deployer,
     contract,
   });
   console.log(`sd${tokenName || name}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.StableDebtToken, name, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.StableDebtToken, name, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployVariableDebtToken = async (assetId: AssetId, tokenName?: string): Promise<VariableDebtToken> => {
+export const deployVariableDebtToken = async (
+  hre: HardhatRuntimeEnvironment,
+  assetId: AssetId,
+  tokenName?: string
+): Promise<VariableDebtToken> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
-  const {name, contract} = getVariableDebtTokenContractName(assetId);
+  const {name, contract} = getVariableDebtTokenContractName(hre, assetId);
   const result = await deploy(name, {
     from: deployer,
     contract,
   });
   console.log(`vd${tokenName || name}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.VariableDebtToken, name, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.VariableDebtToken, name, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployAToken = async (assetId: AssetId, tokenName?: string): Promise<AToken> => {
+export const deployAToken = async (
+  hre: HardhatRuntimeEnvironment,
+  assetId: AssetId,
+  tokenName?: string
+): Promise<AToken> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
-  const {name, contract} = getATokenContractName(assetId, false);
+  const {name, contract} = getATokenContractName(hre, assetId, false);
   const result = await deploy(name, {
     from: deployer,
     contract,
   });
   console.log(`a${tokenName || name}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.AToken, name, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.AToken, name, network.name, result);
 
-  return (await getContractAt(contract, result.address)) as AToken;
+  return (await getContractAt(hre, contract, result.address)) as AToken;
 };
 
 export const deployDelegationAwareAToken = async (
+  hre: HardhatRuntimeEnvironment,
   assetId: AssetId,
   tokenName?: string
 ): Promise<DelegationAwareAToken> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
-  const {name, contract} = getATokenContractName(assetId, true);
+  const {name, contract} = getATokenContractName(hre, assetId, true);
   const result = await deploy(name, {
     from: deployer,
     contract,
   });
   console.log(`a${tokenName || name}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.AToken, name, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.AToken, name, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
 export const deployDefaultReserveInterestRateStrategy = async (
+  hre: HardhatRuntimeEnvironment,
   name: string,
   input: InterestRateStrategyInput
 ): Promise<DefaultReserveInterestRateStrategy> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.DefaultReserveInterestRateStrategy;
   const {
@@ -461,12 +620,19 @@ export const deployDefaultReserveInterestRateStrategy = async (
     ],
   });
   console.log(`${name}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, name, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, name, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployLendingPoolCollateralManager = async (): Promise<LendingPoolCollateralManager> => {
+export const deployLendingPoolCollateralManager = async (
+  hre: HardhatRuntimeEnvironment
+): Promise<LendingPoolCollateralManager> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.LendingPoolCollateralManager;
   const result = await deploy(contract, {
@@ -474,12 +640,20 @@ export const deployLendingPoolCollateralManager = async (): Promise<LendingPoolC
     contract,
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployMockFlashLoanReceiver = async (addressProvider: Address): Promise<MockFlashLoanReceiver> => {
+export const deployMockFlashLoanReceiver = async (
+  hre: HardhatRuntimeEnvironment,
+  addressProvider: Address
+): Promise<MockFlashLoanReceiver> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.MockFlashLoanReceiver;
   const result = await deploy(contract, {
@@ -488,12 +662,17 @@ export const deployMockFlashLoanReceiver = async (addressProvider: Address): Pro
     args: [addressProvider],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployMockUniswapRouter = async (): Promise<MockUniswapV2Router02> => {
+export const deployMockUniswapRouter = async (hre: HardhatRuntimeEnvironment): Promise<MockUniswapV2Router02> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.MockUniswapV2Router02;
   const result = await deploy(contract, {
@@ -501,16 +680,22 @@ export const deployMockUniswapRouter = async (): Promise<MockUniswapV2Router02> 
     contract,
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
 export const deployUniswapLiquiditySwapAdapter = async (
+  hre: HardhatRuntimeEnvironment,
   addressProvider: Address,
   mockUniswapRouter: Address,
   weth: Address
 ): Promise<UniswapLiquiditySwapAdapter> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.UniswapLiquiditySwapAdapter;
   const result = await deploy(contract, {
@@ -519,16 +704,22 @@ export const deployUniswapLiquiditySwapAdapter = async (
     args: [addressProvider, mockUniswapRouter, weth],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
 export const deployUniswapRepayAdapter = async (
+  hre: HardhatRuntimeEnvironment,
   addressProvider: Address,
   mockUniswapRouter: Address,
   weth: Address
 ): Promise<UniswapRepayAdapter> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.UniswapRepayAdapter;
   const result = await deploy(contract, {
@@ -537,16 +728,22 @@ export const deployUniswapRepayAdapter = async (
     args: [addressProvider, mockUniswapRouter, weth],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
 export const deployFlashLiquidationAdapter = async (
+  hre: HardhatRuntimeEnvironment,
   addressProvider: Address,
   mockUniswapRouter: Address,
   weth: Address
 ): Promise<FlashLiquidationAdapter> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.FlashLiquidationAdapter;
   const result = await deploy(contract, {
@@ -555,12 +752,17 @@ export const deployFlashLiquidationAdapter = async (
     args: [addressProvider, mockUniswapRouter, weth],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployWalletBalanceProvider = async (): Promise<WalletBalanceProvider> => {
+export const deployWalletBalanceProvider = async (hre: HardhatRuntimeEnvironment): Promise<WalletBalanceProvider> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.WalletBalanceProvider;
   const result = await deploy(contract, {
@@ -568,12 +770,17 @@ export const deployWalletBalanceProvider = async (): Promise<WalletBalanceProvid
     contract,
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployWETHGateway = async (weth: Address): Promise<WETHGateway> => {
+export const deployWETHGateway = async (hre: HardhatRuntimeEnvironment, weth: Address): Promise<WETHGateway> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.WETHGateway;
   const result = await deploy(contract, {
@@ -582,12 +789,17 @@ export const deployWETHGateway = async (weth: Address): Promise<WETHGateway> => 
     args: [weth],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployBNBGateway = async (wbnb: Address): Promise<WBNBGateway> => {
+export const deployBNBGateway = async (hre: HardhatRuntimeEnvironment, wbnb: Address): Promise<WBNBGateway> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.WBNBGateway;
   const result = await deploy(contract, {
@@ -596,12 +808,17 @@ export const deployBNBGateway = async (wbnb: Address): Promise<WBNBGateway> => {
     args: [wbnb],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deploySelfdestructTansfer = async (): Promise<MockSelfdestructTransfer> => {
+export const deploySelfdestructTansfer = async (hre: HardhatRuntimeEnvironment): Promise<MockSelfdestructTransfer> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.MockSelfdestructTransfer;
   const result = await deploy(contract, {
@@ -609,12 +826,17 @@ export const deploySelfdestructTansfer = async (): Promise<MockSelfdestructTrans
     contract,
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
-export const deployMockBandStdReference = async (): Promise<MockBandStdReference> => {
+export const deployMockBandStdReference = async (hre: HardhatRuntimeEnvironment): Promise<MockBandStdReference> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.MockBandStdReference;
   const result = await deploy(contract, {
@@ -622,17 +844,23 @@ export const deployMockBandStdReference = async (): Promise<MockBandStdReference
     contract,
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };
 
 export const deployBandPriceOracle = async (
+  hre: HardhatRuntimeEnvironment,
   stdReference: Address,
   fallbackOracle: Address,
   weth: Address,
   base: string
 ): Promise<BandPriceOracle> => {
+  const {
+    deployments: {deploy},
+    getNamedAccounts,
+    network,
+  } = hre;
   const {deployer} = await getNamedAccounts();
   const contract = ContractId.BandPriceOracle;
   const result = await deploy(contract, {
@@ -641,7 +869,7 @@ export const deployBandPriceOracle = async (
     args: [stdReference, fallbackOracle, weth, base],
   });
   console.log(`${contract}: ${result.address}`);
-  await registerContractInJsonDb(ContractType.Protocol, contract, hre.network.name, result);
+  await registerContractInJsonDb(ContractType.Protocol, contract, network.name, result);
 
-  return await getContractAt(contract, result.address);
+  return await getContractAt(hre, contract, result.address);
 };

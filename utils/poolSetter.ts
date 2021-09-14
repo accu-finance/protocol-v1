@@ -1,4 +1,5 @@
 import {BigNumber, constants} from 'ethers';
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import _ from 'lodash';
 import {AddressProvider, LendingPoolConfigurator, LendingRateOracle, StableAndVariableTokensHelper} from '../typechain';
 import {
@@ -11,7 +12,6 @@ import {
   InterestRateStrategyName,
   MarketConfiguration,
   MarketRate,
-  Network,
   PoolAsset,
 } from '../types';
 import {
@@ -28,12 +28,14 @@ import {enumKeys} from './index';
 const {AddressZero} = constants;
 
 export const initMarketRates = async (
+  hre: HardhatRuntimeEnvironment,
   marketConfig: MarketConfiguration,
   poolAsset: PoolAsset<Address>,
   marketRate: PoolAsset<MarketRate>,
   landingRateOracleAddress: Address
 ): Promise<void> => {
   const lendingRateOracle = await getContractAt<LendingRateOracle>(
+    hre,
     ContractId.LendingRateOracle,
     landingRateOracleAddress
   );
@@ -49,8 +51,9 @@ export const initMarketRates = async (
 };
 
 export const initReserves = async (
+  hre: HardhatRuntimeEnvironment,
   marketConfig: MarketConfiguration,
-  network: Network,
+  treasuryAddress: string,
   poolAssetAddress: PoolAsset<Address>,
   lendingPoolAddressProvider: AddressProvider,
   chunkSize = 1
@@ -59,13 +62,13 @@ export const initReserves = async (
     aTokenNamePrefix,
     stableDebtTokenNamePrefix,
     variableDebtTokenNamePrefix,
-    reserveFactorTreasuryAddress,
     symbolPrefix,
     reserveConfig,
     interestRateStrategies,
     nativeCurrency,
   } = marketConfig;
   const lendingPoolConfigurator = await getContractAt<LendingPoolConfigurator>(
+    hre,
     ContractId.LendingPoolConfigurator,
     await lendingPoolAddressProvider.getLendingPoolConfigurator()
   );
@@ -81,7 +84,7 @@ export const initReserves = async (
       stableRateSlope1,
       stableRateSlope2,
     } = strategy;
-    const reserveInterestRateStrategy = await deployDefaultReserveInterestRateStrategy(strategy.name, {
+    const reserveInterestRateStrategy = await deployDefaultReserveInterestRateStrategy(hre, strategy.name, {
       addressProviderAddress: lendingPoolAddressProvider.address,
       optimalUtilizationRate,
       baseVariableBorrowRate,
@@ -98,15 +101,13 @@ export const initReserves = async (
     const assetName = assetId === AssetId.WNATIVE ? nativeCurrency : assetId;
     const aTokenImplAddress =
       reserveConfig[assetId].aTokenImpl === ContractId.AToken
-        ? (await deployAToken(assetId, assetName)).address
-        : (await deployDelegationAwareAToken(assetId, assetName)).address;
-    const stableDebtTokenImplementationAddress = (await deployStableDebtToken(assetId, assetName)).address;
-    const variableDebtTokenImplementationAddress = (await deployVariableDebtToken(assetId, assetName)).address;
+        ? (await deployAToken(hre, assetId, assetName)).address
+        : (await deployDelegationAwareAToken(hre, assetId, assetName)).address;
+    const stableDebtTokenImplementationAddress = (await deployStableDebtToken(hre, assetId, assetName)).address;
+    const variableDebtTokenImplementationAddress = (await deployVariableDebtToken(hre, assetId, assetName)).address;
 
     const {reserveDecimals, strategy} = reserveConfig[assetId];
     const assetAddress = poolAssetAddress[assetId];
-    // @ts-ignore
-    const treasuryAddress = reserveFactorTreasuryAddress[network];
 
     if (!strategyAddress[strategy.name]) {
       throw new Error(`no strategyAddress for ${strategy.name}`);
@@ -143,12 +144,14 @@ export const initReserves = async (
 };
 
 export const configureReserves = async (
+  hre: HardhatRuntimeEnvironment,
   marketConfig: MarketConfiguration,
   poolAssetAddress: PoolAsset<Address>,
   lendingPoolAddressProvider: AddressProvider
 ): Promise<void> => {
   const {reserveConfig, nativeCurrency} = marketConfig;
   const lendingPoolConfigurator = await getContractAt<LendingPoolConfigurator>(
+    hre,
     ContractId.LendingPoolConfigurator,
     await lendingPoolAddressProvider.getLendingPoolConfigurator()
   );
@@ -216,6 +219,7 @@ export const mapAssetsBorrowRateAddressPairs = (
 };
 
 export const setInitialMarketRatesInRatesOracleByHelper = async (
+  hre: HardhatRuntimeEnvironment,
   poolAsset: PoolAsset<Address>,
   marketRate: PoolAsset<MarketRate>,
   landingRateOracleAddress: Address,
@@ -223,10 +227,12 @@ export const setInitialMarketRatesInRatesOracleByHelper = async (
   admin: Address
 ): Promise<void> => {
   const lendingRateOracle = await getContractAt<LendingRateOracle>(
+    hre,
     ContractId.LendingRateOracle,
     landingRateOracleAddress
   );
   const stableAndVariableTokensHelper = await getContractAt<StableAndVariableTokensHelper>(
+    hre,
     ContractId.StableAndVariableTokensHelper,
     stableAndVariableTokensHelperAddress
   );

@@ -1,7 +1,7 @@
 import {waffleChai} from '@ethereum-waffle/chai';
 import {expect, use} from 'chai';
 import {utils} from 'ethers';
-import {getUnnamedAccounts} from 'hardhat';
+import hre, {getUnnamedAccounts} from 'hardhat';
 import {ProtocolErrors} from '../types';
 import {deployLendingPool} from '../utils/contractDeployer';
 import {waitForTx} from '../utils/hhNetwork';
@@ -42,7 +42,7 @@ describe('AddressProvider', () => {
     const {admin} = await setupFixture();
     const {INVALID_OWNER_REVERT_MSG} = ProtocolErrors;
 
-    const mockLendingPool = await deployLendingPool('mockLendingPool');
+    const mockLendingPool = await deployLendingPool(hre, 'mockLendingPool');
     const proxiedAddressId = utils.keccak256(utils.toUtf8Bytes('RANDOM_PROXIED'));
 
     const proxiedAddressSetReceipt = await waitForTx(

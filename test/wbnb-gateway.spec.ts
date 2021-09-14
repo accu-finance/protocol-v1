@@ -2,9 +2,9 @@ import {waffleChai} from '@ethereum-waffle/chai';
 import {parseEther} from '@ethersproject/units';
 import {expect, use} from 'chai';
 import {constants, utils} from 'ethers';
-import {ethers} from 'hardhat';
+import hre, {ethers} from 'hardhat';
 import {YEAR} from '../constants';
-import {Fixture, MarketProvider, ProtocolErrors, RateMode} from '../types';
+import {AddressProviderId, Fixture, ProtocolErrors, RateMode} from '../types';
 import {deploySelfdestructTansfer} from '../utils/contractDeployer';
 import convertToCurrencyDecimals from '../utils/convertToCurrencyDecimals';
 import {waitForTx} from '../utils/hhNetwork';
@@ -18,7 +18,7 @@ const {Zero} = constants;
 
 use(waffleChai);
 
-(process.env.PROVIDER_ID === MarketProvider.BscMain ? describe : describe.skip)(
+(parseInt(process.env.ADDRESS_PROVIDER_ID || '0') === AddressProviderId.BscMain ? describe : describe.skip)(
   'WBNBGateway: allow deposit, withdraw, stable rate borrow, repay using native BNB by LendingPool',
   function () {
     const fixture = {} as Fixture;
@@ -72,7 +72,7 @@ use(waffleChai);
   }
 );
 
-(process.env.PROVIDER_ID === MarketProvider.BscMain ? describe : describe.skip)(
+(parseInt(process.env.ADDRESS_PROVIDER_ID || '0') === AddressProviderId.BscMain ? describe : describe.skip)(
   'WBNBGateway: allow deposit, withdraw, variable rate borrow, repay using native BNB by LendingPool',
   () => {
     const fixture = {} as Fixture;
@@ -126,7 +126,7 @@ use(waffleChai);
   }
 );
 
-(process.env.PROVIDER_ID === MarketProvider.BscMain ? describe : describe.skip)(
+(parseInt(process.env.ADDRESS_PROVIDER_ID || '0') === AddressProviderId.BscMain ? describe : describe.skip)(
   'WBNBGateway: receive and fallback function',
   () => {
     it('reverted: call receive function with BNB', async () => {
@@ -160,63 +160,66 @@ use(waffleChai);
   }
 );
 
-(process.env.PROVIDER_ID === MarketProvider.BscMain ? describe : describe.skip)('WBNBGateway: owner function', () => {
-  it('Only owner can perform emergency BNB transfer', async () => {
-    const {deployer, user1, user2, wGateway} = await setupFixture();
-    const amount = parseEther('1');
-    const signer = await ethers.getSigner(user1.address);
-    const userBalanceBefore = await signer.getBalance();
+(parseInt(process.env.ADDRESS_PROVIDER_ID || '0') === AddressProviderId.BscMain ? describe : describe.skip)(
+  'WBNBGateway: owner function',
+  () => {
+    it('Only owner can perform emergency BNB transfer', async () => {
+      const {deployer, user1, user2, wGateway} = await setupFixture();
+      const amount = parseEther('1');
+      const signer = await ethers.getSigner(user1.address);
+      const userBalanceBefore = await signer.getBalance();
 
-    const wGatewaySigner = await ethers.getSigner(wGateway.address);
-    const wGatewayBalanceBefore = await wGatewaySigner.getBalance();
+      const wGatewaySigner = await ethers.getSigner(wGateway.address);
+      const wGatewayBalanceBefore = await wGatewaySigner.getBalance();
 
-    //deploy mock contract
-    const selfdestructTransfer = await deploySelfdestructTansfer();
+      //deploy mock contract
+      const selfdestructTransfer = await deploySelfdestructTansfer(hre);
 
-    //call selfdestruct and transfer to wGateway
-    const tx = await selfdestructTransfer
-      .connect(await ethers.getSigner(user1.address))
-      .destroyAndTransfer(wGateway.address, {value: amount});
-    const {gasUsed} = await waitForTx(tx);
-    const gasFee = gasUsed.mul(tx.gasPrice || Zero);
-    const userBalanceAfter = await signer.getBalance();
-    const wGatewayBalanceAfter = await wGatewaySigner.getBalance();
+      //call selfdestruct and transfer to wGateway
+      const tx = await selfdestructTransfer
+        .connect(await ethers.getSigner(user1.address))
+        .destroyAndTransfer(wGateway.address, {value: amount});
+      const {gasUsed} = await waitForTx(tx);
+      const gasFee = gasUsed.mul(tx.gasPrice || Zero);
+      const userBalanceAfter = await signer.getBalance();
+      const wGatewayBalanceAfter = await wGatewaySigner.getBalance();
 
-    expect(userBalanceAfter).to.be.eq(userBalanceBefore.sub(amount).sub(gasFee));
-    expect(wGatewayBalanceAfter).to.be.eq(wGatewayBalanceBefore.add(amount));
+      expect(userBalanceAfter).to.be.eq(userBalanceBefore.sub(amount).sub(gasFee));
+      expect(wGatewayBalanceAfter).to.be.eq(wGatewayBalanceBefore.add(amount));
 
-    await expect(user2.wGateway.emergencyEtherTransfer(user2.address, amount)).to.be.reverted;
+      await expect(user2.wGateway.emergencyEtherTransfer(user2.address, amount)).to.be.reverted;
 
-    //recover funds from calling selfdestruct
-    await deployer.wGateway.emergencyEtherTransfer(user1.address, amount);
-    const userBalanceAfterRecover = await signer.getBalance();
-    const wGatewayBalanceAfterRecover = await wGatewaySigner.getBalance();
+      //recover funds from calling selfdestruct
+      await deployer.wGateway.emergencyEtherTransfer(user1.address, amount);
+      const userBalanceAfterRecover = await signer.getBalance();
+      const wGatewayBalanceAfterRecover = await wGatewaySigner.getBalance();
 
-    expect(userBalanceAfterRecover).to.be.eq(userBalanceAfter.add(amount));
-    expect(wGatewayBalanceAfterRecover).to.be.eq(wGatewayBalanceAfter.sub(amount));
-  });
+      expect(userBalanceAfterRecover).to.be.eq(userBalanceAfter.add(amount));
+      expect(wGatewayBalanceAfterRecover).to.be.eq(wGatewayBalanceAfter.sub(amount));
+    });
 
-  it('Only owner can perform emergency token transfer', async () => {
-    const {deployer, user1, user2, asset, wGateway: wGateway} = await setupFixture();
-    const amount = await convertToCurrencyDecimals(asset.DAI, '1000');
-    await mint(asset.DAI, '1000', user1);
-    const userBalanceBefore = await asset.DAI.balanceOf(user1.address);
-    const wGatewayBalanceBefore = await asset.DAI.balanceOf(wGateway.address);
+    it('Only owner can perform emergency token transfer', async () => {
+      const {deployer, user1, user2, asset, wGateway: wGateway} = await setupFixture();
+      const amount = await convertToCurrencyDecimals(asset.DAI, '1000');
+      await mint(asset.DAI, '1000', user1);
+      const userBalanceBefore = await asset.DAI.balanceOf(user1.address);
+      const wGatewayBalanceBefore = await asset.DAI.balanceOf(wGateway.address);
 
-    await transfer(asset.DAI, user1, '1000', wGateway.address);
-    const userBalanceAfter = await asset.DAI.balanceOf(user1.address);
-    const wGatewayBalanceAfter = await asset.DAI.balanceOf(wGateway.address);
+      await transfer(asset.DAI, user1, '1000', wGateway.address);
+      const userBalanceAfter = await asset.DAI.balanceOf(user1.address);
+      const wGatewayBalanceAfter = await asset.DAI.balanceOf(wGateway.address);
 
-    expect(userBalanceAfter).to.be.eq(userBalanceBefore.sub(amount));
-    expect(wGatewayBalanceAfter).to.be.eq(wGatewayBalanceBefore.add(amount));
+      expect(userBalanceAfter).to.be.eq(userBalanceBefore.sub(amount));
+      expect(wGatewayBalanceAfter).to.be.eq(wGatewayBalanceBefore.add(amount));
 
-    await expect(user2.wGateway.emergencyTokenTransfer(asset.DAI.address, user2.address, amount)).to.be.reverted;
+      await expect(user2.wGateway.emergencyTokenTransfer(asset.DAI.address, user2.address, amount)).to.be.reverted;
 
-    await deployer.wGateway.emergencyTokenTransfer(asset.DAI.address, user1.address, amount);
-    const userBalanceAfterRecover = await asset.DAI.balanceOf(user1.address);
-    const wGatewayBalanceAfterRecover = await asset.DAI.balanceOf(wGateway.address);
+      await deployer.wGateway.emergencyTokenTransfer(asset.DAI.address, user1.address, amount);
+      const userBalanceAfterRecover = await asset.DAI.balanceOf(user1.address);
+      const wGatewayBalanceAfterRecover = await asset.DAI.balanceOf(wGateway.address);
 
-    expect(userBalanceAfterRecover).to.be.eq(userBalanceAfter.add(amount));
-    expect(wGatewayBalanceAfterRecover).to.be.eq(wGatewayBalanceAfter.sub(amount));
-  });
-});
+      expect(userBalanceAfterRecover).to.be.eq(userBalanceAfter.add(amount));
+      expect(wGatewayBalanceAfterRecover).to.be.eq(wGatewayBalanceAfter.sub(amount));
+    });
+  }
+);

@@ -1,5 +1,6 @@
 import {Contract} from 'ethers';
 import {deployments, ethers, getNamedAccounts} from 'hardhat';
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {
   AddressProvider,
   AToken,
@@ -24,12 +25,12 @@ import {
 import {IPriceOracleSetter} from '../typechain/IPriceOracleSetter';
 import {WBNBGateway} from '../typechain/WBNBGateway';
 import {
+  AddressProviderId,
   AssetId,
   ContractId,
   ContractRecord,
   ERC20Token,
   Fixture,
-  MarketProvider,
   NativeCurrency,
   Oracle,
   PoolAsset,
@@ -41,12 +42,14 @@ import {enumKeys} from '../utils';
 import getMarketConfig from '../utils/getMarketConfig';
 import {getContractAt} from './contractGetter';
 
-export const setupFixture = deployments.createFixture(async () => {
-  const market = (process.env.PROVIDER_ID as MarketProvider) || MarketProvider.EthereumMain;
-  if (!market) {
-    throw new Error(`unsupported market ${market}`);
+export const setupFixture = deployments.createFixture(async (hre: HardhatRuntimeEnvironment) => {
+  const addressProviderId: AddressProviderId | undefined =
+    AddressProviderId[AddressProviderId[process.env.ADDRESS_PROVIDER_ID as any] as keyof typeof AddressProviderId];
+  if (!addressProviderId) {
+    throw new Error(`unsupported market  id '${process.env.ADDRESS_PROVIDER_ID}'`);
   }
-  const marketConfig = getMarketConfig(market);
+
+  const marketConfig = getMarketConfig(addressProviderId);
 
   await deployments.fixture(['testEnv']);
 
@@ -75,11 +78,17 @@ export const setupFixture = deployments.createFixture(async () => {
 
   // proxy contracts
   const configurator = await getContractAt<LendingPoolConfigurator>(
+    hre,
     ContractId.LendingPoolConfigurator,
     await addressProvider.getLendingPoolConfigurator()
   );
-  const lendingPool = await getContractAt<LendingPool>(ContractId.LendingPool, await addressProvider.getLendingPool());
+  const lendingPool = await getContractAt<LendingPool>(
+    hre,
+    ContractId.LendingPool,
+    await addressProvider.getLendingPool()
+  );
   const priceOracle = await getContractAt<IPriceOracleGetter>(
+    hre,
     ContractId.MockPriceOracle,
     await addressProvider.getPriceOracle()
   );
@@ -104,12 +113,14 @@ export const setupFixture = deployments.createFixture(async () => {
 
     // aToken and debtToken are proxy contract in lending pool. have to query via lendingPool
     const reserveData = await lendingPool.getReserveData(asset[assetId].address);
-    aToken[assetId] = await getContractAt<AToken>(ContractId.AToken, reserveData.aTokenAddress);
+    aToken[assetId] = await getContractAt<AToken>(hre, ContractId.AToken, reserveData.aTokenAddress);
     sdToken[assetId] = await getContractAt<StableDebtToken>(
+      hre,
       ContractId.StableDebtToken,
       reserveData.stableDebtTokenAddress
     );
     vdToken[assetId] = await getContractAt<VariableDebtToken>(
+      hre,
       ContractId.VariableDebtToken,
       reserveData.variableDebtTokenAddress
     );

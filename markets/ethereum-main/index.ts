@@ -39,7 +39,7 @@ export const ethereumMainConfig: EthereumConfiguration = {
   ...baseConfig,
   marketId: 'Ethereum Main Market',
   nativeCurrency: NativeCurrency.ETH,
-  providerId: 1, // main market in Ethereum
+  addressProviderId: 1, // main market in Ethereum
   reserveConfig: {
     BAT: reserveConfigBAT,
     BTC: reserveConfigWBTC,
@@ -78,7 +78,7 @@ export const ethereumMainConfig: EthereumConfiguration = {
     rateStrategyVolatileFour,
   ],
   reserveAsset: {
-    [Network.hardhat]: {} as EthereumPoolAsset<Address>,
+    [Network.localhost]: {} as EthereumPoolAsset<Address>,
     [Network.kovan]: {} as EthereumPoolAsset<Address>,
     [Network.ropsten]: {} as EthereumPoolAsset<Address>,
     [Network.mainnet]: {} as EthereumPoolAsset<Address>,
@@ -102,53 +102,53 @@ export const ethereumMainConfig: EthereumConfiguration = {
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.tenderlyMain]: '',
   },
   addressProvider: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
     [Network.tenderlyMain]: '',
   },
   lendingRateOracle: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
     [Network.tenderlyMain]: '',
   },
   weth: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
     [Network.tenderlyMain]: '',
   },
   wethGateway: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
     [Network.tenderlyMain]: '',
   },
   mainOracle: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
     [Network.tenderlyMain]: '',
   },
   fallbackOracle: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
     [Network.tenderlyMain]: '',
   },
   chainlinkAggregator: {
-    [Network.hardhat]: {} as EthereumPoolAsset<Address>,
+    [Network.localhost]: {} as EthereumPoolAsset<Address>,
     [Network.kovan]: {} as EthereumPoolAsset<Address>,
     [Network.ropsten]: {} as EthereumPoolAsset<Address>,
     [Network.mainnet]: {} as EthereumPoolAsset<Address>,
@@ -156,21 +156,21 @@ export const ethereumMainConfig: EthereumConfiguration = {
   },
   bandStdReference: {} as EthereumNetworkConfig<Address>,
   reserveFactorTreasuryAddress: {
-    [Network.hardhat]: '0xe6f274FAA5438910e26BE344593592A7aDB5DF33',
+    [Network.localhost]: '0xe6f274FAA5438910e26BE344593592A7aDB5DF33',
     [Network.kovan]: '0xe6f274FAA5438910e26BE344593592A7aDB5DF33',
     [Network.ropsten]: '0xe6f274FAA5438910e26BE344593592A7aDB5DF33',
     [Network.mainnet]: '0xe6f274FAA5438910e26BE344593592A7aDB5DF33',
     [Network.tenderlyMain]: '0xe6f274FAA5438910e26BE344593592A7aDB5DF33',
   },
   protocolDataProvider: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
     [Network.tenderlyMain]: '',
   },
   appDataProvider: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
@@ -178,14 +178,14 @@ export const ethereumMainConfig: EthereumConfiguration = {
   },
   // users and treasury
   poolAdmin: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
     [Network.tenderlyMain]: '',
   },
   emergencyAdmin: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
@@ -195,11 +195,11 @@ export const ethereumMainConfig: EthereumConfiguration = {
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.tenderlyMain]: '',
   },
   tokenDistributor: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: '',
@@ -207,13 +207,20 @@ export const ethereumMainConfig: EthereumConfiguration = {
   },
   // block explorer
   blockExplorerUrl: {
-    [Network.hardhat]: '',
+    [Network.localhost]: '',
     [Network.kovan]: '',
     [Network.ropsten]: '',
     [Network.mainnet]: 'https://etherscan.com/tx',
     [Network.tenderlyMain]: '',
   },
   mockPoolAssetPrice: assetPrice,
+  uniswapRouter: {
+    [Network.localhost]: '',
+    [Network.kovan]: '',
+    [Network.ropsten]: '',
+    [Network.mainnet]: '',
+    [Network.tenderlyMain]: '',
+  },
 };
 
 export default ethereumMainConfig;

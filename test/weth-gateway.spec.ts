@@ -2,9 +2,9 @@ import {waffleChai} from '@ethereum-waffle/chai';
 import {parseEther} from '@ethersproject/units';
 import {expect, use} from 'chai';
 import {constants, utils} from 'ethers';
-import {ethers} from 'hardhat';
+import hre, {ethers} from 'hardhat';
 import {YEAR} from '../constants';
-import {Fixture, MarketProvider, ProtocolErrors, RateMode} from '../types';
+import {AddressProviderId, Fixture, ProtocolErrors, RateMode} from '../types';
 import {deploySelfdestructTansfer} from '../utils/contractDeployer';
 import convertToCurrencyDecimals from '../utils/convertToCurrencyDecimals';
 import {waitForTx} from '../utils/hhNetwork';
@@ -17,7 +17,7 @@ const {Zero} = constants;
 
 use(waffleChai);
 
-(process.env.PROVIDER_ID === MarketProvider.EthereumMain ? describe : describe.skip)(
+(parseInt(process.env.ADDRESS_PROVIDER_ID || '0') === AddressProviderId.EthereumMain ? describe : describe.skip)(
   'WETHGateway: allow deposit, withdraw, stable rate borrow, repay using native ETH by LendingPool',
   function () {
     const fixture = {} as Fixture;
@@ -71,7 +71,7 @@ use(waffleChai);
   }
 );
 
-(process.env.PROVIDER_ID === MarketProvider.EthereumMain ? describe : describe.skip)(
+(parseInt(process.env.ADDRESS_PROVIDER_ID || '0') === AddressProviderId.EthereumMain ? describe : describe.skip)(
   'WETHGateway: allow deposit, withdraw, variable rate borrow, repay using native ETH by LendingPool',
   () => {
     const fixture = {} as Fixture;
@@ -125,7 +125,7 @@ use(waffleChai);
   }
 );
 
-(process.env.PROVIDER_ID === MarketProvider.EthereumMain ? describe : describe.skip)(
+(parseInt(process.env.ADDRESS_PROVIDER_ID || '0') === AddressProviderId.EthereumMain ? describe : describe.skip)(
   'WETHGateway: receive and fallback function',
   () => {
     it('reverted: call receive function with ETH', async () => {
@@ -159,7 +159,7 @@ use(waffleChai);
   }
 );
 
-(process.env.PROVIDER_ID === MarketProvider.EthereumMain ? describe : describe.skip)(
+(parseInt(process.env.ADDRESS_PROVIDER_ID || '0') === AddressProviderId.EthereumMain ? describe : describe.skip)(
   'WETHGateway: owner function',
   () => {
     it('Only owner can perform emergency ETH transfer', async () => {
@@ -172,7 +172,7 @@ use(waffleChai);
       const wGatewayBalanceBefore = await wGatewaySigner.getBalance();
 
       //deploy mock contract
-      const selfdestructTransfer = await deploySelfdestructTansfer();
+      const selfdestructTransfer = await deploySelfdestructTansfer(hre);
 
       //call selfdestruct and transfer to wGateway
       const tx = await selfdestructTransfer

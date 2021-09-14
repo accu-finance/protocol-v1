@@ -10,6 +10,16 @@ import 'solidity-coverage';
 import getAccount from './utils/getAccounts';
 import getNodeUrl from './utils/getNodeUrl';
 
+const SKIP_LOAD = process.env.SKIP_LOAD === 'true';
+
+// Prevent to load scripts before compilation and typechain
+if (!SKIP_LOAD) {
+  require('./tasks/index.ts');
+}
+
+// Turn off auto mining mode to add some delay to transactions
+const AUTO_MINE_OFF = process.env.AUTO_MINE_OFF === 'true';
+
 const config: HardhatUserConfig = {
   solidity: {
     compilers: [
@@ -27,10 +37,12 @@ const config: HardhatUserConfig = {
   networks: {
     hardhat: {
       accounts: getAccount(),
-      // mining: {
-      //   auto: false,
-      //   interval: [3000, 6000],
-      // },
+      mining: AUTO_MINE_OFF
+        ? {
+            auto: false,
+            interval: [3000, 6000],
+          }
+        : undefined,
     },
     localhost: {
       url: getNodeUrl('localhost'),
@@ -51,6 +63,10 @@ const config: HardhatUserConfig = {
     bsctestnet: {
       url: getNodeUrl('bsctestnet'),
       accounts: getAccount('bsctestnet'),
+    },
+    bscmainnet: {
+      url: getNodeUrl('bscmainnet'),
+      accounts: getAccount('bscmainnet'),
     },
   },
   namedAccounts: {

@@ -216,9 +216,10 @@ export enum ProtocolErrors {
   SAFEERC20_LOWLEVEL_CALL = 'SafeERC20: low-level call failed',
 }
 
-export enum MarketProvider {
-  EthereumMain = '1',
-  BscMain = '2',
+// DO NOT CHANGE THE VALUES IF EXISTING
+export enum AddressProviderId {
+  EthereumMain = 1,
+  BscMain = 2,
 }
 
 export enum Oracle {
@@ -237,7 +238,7 @@ export interface BaseConfiguration {
   stableDebtTokenNamePrefix: string;
   variableDebtTokenNamePrefix: string;
   symbolPrefix: string;
-  providerId: number;
+  addressProviderId: number;
   protocolGlobalConfig: ProtocolGlobalConfig;
   interestRateStrategies: InterestRateStrategyConfig[];
   oracle: Oracle;
@@ -268,6 +269,7 @@ export interface EthereumConfiguration extends BaseConfiguration {
   protocolDataProvider: EthereumNetworkConfig<Address>;
   appDataProvider: EthereumNetworkConfig<Address>;
   blockExplorerUrl: EthereumNetworkConfig<string>;
+  uniswapRouter: EthereumNetworkConfig<Address>;
 }
 
 export interface BscConfiguration extends BaseConfiguration {
@@ -293,6 +295,7 @@ export interface BscConfiguration extends BaseConfiguration {
   protocolDataProvider: BscNetworkConfig<Address>;
   appDataProvider: BscNetworkConfig<Address>;
   blockExplorerUrl: BscNetworkConfig<string>;
+  uniswapRouter: BscNetworkConfig<Address>;
 }
 
 export type MarketConfiguration = EthereumConfiguration | BscConfiguration;
@@ -383,6 +386,7 @@ export type PoolAsset<T> = EthereumPoolAsset<T> | BscPoolAsset<T>;
 
 export enum Network {
   hardhat = 'hardhat',
+  localhost = 'localhost',
   kovan = 'kovan',
   mainnet = 'mainnet',
   ropsten = 'ropsten',
@@ -399,15 +403,15 @@ export enum ChainId {
   // KOVAN = 42,
   // BSC_MAINNET = 56,
   bscTestnet = 97,
-  // LOCALHOST = 1337,
   hardhat = 31337,
+  localhost = 31337,
 }
 
-export type BscNetwork = Network.hardhat | Network.bscmainnet | Network.bsctestnet;
+export type BscNetwork = Network.localhost | Network.bscmainnet | Network.bsctestnet;
 
 export type EthereumNetwork =
+  | Network.localhost
   | Network.mainnet
-  | Network.hardhat
   | Network.kovan
   | Network.ropsten
   | Network.tenderlyMain;

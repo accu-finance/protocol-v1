@@ -1,13 +1,16 @@
 import {Contract} from 'ethers';
-import hre from 'hardhat';
+import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {AToken, DelegationAwareAToken, StableDebtToken, VariableDebtToken} from '../typechain';
 import {AssetId, ContractId} from '../types';
 
-export const getContractAt = async <T extends Contract>(contractId: ContractId, address: string): Promise<T> =>
-  (await hre.ethers.getContractAt(contractId, address)) as T;
+export const getContractAt = async <T extends Contract>(
+  hre: HardhatRuntimeEnvironment,
+  contractId: ContractId | string,
+  address: string
+): Promise<T> => (await hre.ethers.getContractAt(contractId, address)) as T;
 
-export const getATokenContract = async (assetId: AssetId): Promise<AToken> => {
-  const {name, contract} = getATokenContractName(assetId);
+export const getATokenContract = async (hre: HardhatRuntimeEnvironment, assetId: AssetId): Promise<AToken> => {
+  const {name, contract} = getATokenContractName(hre, assetId);
   if (contract == ContractId.DelegationAwareAToken) {
     return (await hre.ethers.getContract(name)) as DelegationAwareAToken;
   }
@@ -15,6 +18,7 @@ export const getATokenContract = async (assetId: AssetId): Promise<AToken> => {
 };
 
 export const getATokenContractName = (
+  hre: HardhatRuntimeEnvironment,
   assetId: AssetId,
   isDelegationAwareAtoken?: boolean
 ): {name: string; contract: ContractId} => {
@@ -24,24 +28,36 @@ export const getATokenContractName = (
   return {name, contract};
 };
 
-export const getStableDebtTokenContract = async (assetId: AssetId): Promise<StableDebtToken> => {
-  const {name} = getStableDebtTokenContractName(assetId);
+export const getStableDebtTokenContract = async (
+  hre: HardhatRuntimeEnvironment,
+  assetId: AssetId
+): Promise<StableDebtToken> => {
+  const {name} = getStableDebtTokenContractName(hre, assetId);
   return (await hre.ethers.getContract(name)) as StableDebtToken;
 };
 
-export const getStableDebtTokenContractName = (assetId: AssetId): {name: string; contract: ContractId} => {
+export const getStableDebtTokenContractName = (
+  hre: HardhatRuntimeEnvironment,
+  assetId: AssetId
+): {name: string; contract: ContractId} => {
   const contract = ContractId.StableDebtToken;
   const prefix = 'sd';
   const name = `${prefix}${assetId}`;
   return {name, contract};
 };
 
-export const getVariableDebtTokenContract = async (assetId: AssetId): Promise<VariableDebtToken> => {
-  const {name} = getVariableDebtTokenContractName(assetId);
+export const getVariableDebtTokenContract = async (
+  hre: HardhatRuntimeEnvironment,
+  assetId: AssetId
+): Promise<VariableDebtToken> => {
+  const {name} = getVariableDebtTokenContractName(hre, assetId);
   return (await hre.ethers.getContract(name)) as VariableDebtToken;
 };
 
-export const getVariableDebtTokenContractName = (assetId: AssetId): {name: string; contract: ContractId} => {
+export const getVariableDebtTokenContractName = (
+  hre: HardhatRuntimeEnvironment,
+  assetId: AssetId
+): {name: string; contract: ContractId} => {
   const contract = ContractId.VariableDebtToken;
   const prefix = 'vd';
   const name = `${prefix}${assetId}`;

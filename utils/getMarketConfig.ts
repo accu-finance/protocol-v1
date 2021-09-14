@@ -1,14 +1,14 @@
 import {bscMainConfig, ethereumMainConfig} from '../markets';
-import {BscConfiguration, EthereumConfiguration, MarketConfiguration, MarketProvider} from '../types';
+import {AddressProviderId, BscConfiguration, EthereumConfiguration, MarketConfiguration} from '../types';
 
-const getMarketConfig = (market: MarketProvider): MarketConfiguration => {
-  switch (market) {
-    case MarketProvider.EthereumMain:
+const getMarketConfig = (addressProviderId: AddressProviderId): MarketConfiguration => {
+  switch (addressProviderId) {
+    case AddressProviderId.EthereumMain:
       return ethereumMainConfig as EthereumConfiguration;
-    case MarketProvider.BscMain:
+    case AddressProviderId.BscMain:
       return bscMainConfig as BscConfiguration;
     default:
-      throw new Error(`Unsupported market config ${market}`);
+      throw new Error(`Unsupported market config ${addressProviderId}`);
   }
 };
 

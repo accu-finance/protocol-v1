@@ -13,13 +13,34 @@ import {
   WAD_DECIMALS,
   WAD_TO_RAY,
 } from '../constants';
-import {ReserveData, UserData} from '../types';
+import {AddressProviderId, Network, ReserveData, UserData} from '../types';
 
 export const enumKeys = <O extends Record<string, unknown>, K extends keyof O = keyof O>(obj: O): K[] => {
   return Object.keys(obj).filter((k) => Number.isNaN(+k)) as K[];
 };
 
 const getKeyValue = <T, K extends keyof T>(obj: T, key: K): T[K] => obj[key];
+
+export const parseNetworkAddressProvider = (
+  networkName: string,
+  addressProviderIdNumber: any
+): {network: Network; addressProviderId: AddressProviderId} => {
+  const network: Network | undefined = Network[networkName as keyof typeof Network];
+  if (!network) {
+    throw new Error(`unsupported network ${networkName}`);
+  }
+
+  const addressProviderId: AddressProviderId | undefined =
+    AddressProviderId[AddressProviderId[addressProviderIdNumber] as keyof typeof AddressProviderId];
+  if (!addressProviderId) {
+    throw new Error(`unsupported addressProviderId  '${addressProviderIdNumber}'`);
+  }
+
+  return {
+    network,
+    addressProviderId,
+  };
+};
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/no-namespace

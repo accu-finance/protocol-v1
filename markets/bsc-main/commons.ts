@@ -10,7 +10,7 @@ export const baseConfig: BaseConfiguration = {
   stableDebtTokenNamePrefix: 'Accu stable debt bearing',
   variableDebtTokenNamePrefix: 'Accu variable debt bearing',
   symbolPrefix: '',
-  providerId: 0, // Overriden in index.ts
+  addressProviderId: 0, // Overriden in index.ts
   protocolGlobalConfig: {
     TokenDistributorPercentageBase: parseUnits('100', PERCENTAGE_DECIMALS),
     priceUSDAddress: '0x10F7Fc1F91Ba351f9C629c5947AD69bD03C05b96',

@@ -2,7 +2,7 @@ import {waffleChai} from '@ethereum-waffle/chai';
 import {expect, use} from 'chai';
 import {BigNumber, BigNumberish, constants, ContractReceipt, ContractTransaction, utils} from 'ethers';
 import {parseEther} from 'ethers/lib/utils';
-import {ethers} from 'hardhat';
+import hre, {ethers} from 'hardhat';
 import {AToken, StableDebtToken, VariableDebtToken} from '../typechain';
 import {
   Address,
@@ -669,11 +669,12 @@ export const withdrawETH = async (
 export const getReserveData = async (asset: ERC20Token, user: User): Promise<ReserveData> => {
   const {stableDebtTokenAddress, variableDebtTokenAddress} = await user.lendingPool.getReserveData(asset.address);
 
-  const stableDebtToken = await getContractAt<StableDebtToken>(ContractId.StableDebtToken, stableDebtTokenAddress);
+  const stableDebtToken = await getContractAt<StableDebtToken>(hre, ContractId.StableDebtToken, stableDebtTokenAddress);
   const {'0': principalStableDebt} = await stableDebtToken.getSupplyData();
   const totalStableDebtLastUpdated = await stableDebtToken.getTotalSupplyLastUpdated();
 
   const variableDebtToken = await getContractAt<VariableDebtToken>(
+    hre,
     ContractId.VariableDebtToken,
     variableDebtTokenAddress
   );
@@ -726,7 +727,7 @@ export const getReserveData = async (asset: ERC20Token, user: User): Promise<Res
 
 export const getUserData = async (asset: ERC20Token, user: User): Promise<UserData> => {
   const {aTokenAddress} = await user.lendingPool.getReserveData(asset.address);
-  const aToken = await getContractAt<AToken>(ContractId.AToken, aTokenAddress);
+  const aToken = await getContractAt<AToken>(hre, ContractId.AToken, aTokenAddress);
   const scaledATokenBalance = await aToken.scaledBalanceOf(user.address);
 
   const {
@@ -764,7 +765,7 @@ export const getUserAccountData = async (user: User) => {
 
 export const getTreasuryBalance = async (asset: ERC20Token, user: User): Promise<BigNumber> => {
   const {aTokenAddress} = await user.lendingPool.getReserveData(asset.address);
-  const aToken = await getContractAt<AToken>(ContractId.AToken, aTokenAddress);
+  const aToken = await getContractAt<AToken>(hre, ContractId.AToken, aTokenAddress);
   return await aToken.balanceOf(await aToken.RESERVE_TREASURY_ADDRESS());
 };
 

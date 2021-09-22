@@ -1,3 +1,4 @@
+import {SignerWithAddress} from '@nomiclabs/hardhat-ethers/dist/src/signers';
 import {BigNumber, BigNumberish} from 'ethers';
 import {
   AddressProvider,
@@ -529,6 +530,7 @@ export type TokenRecord = {
 export type User = {
   address: string;
   name: string;
+  signer: SignerWithAddress;
 } & ContractRecord &
   TokenRecord;
 
@@ -543,6 +545,7 @@ export type Fixture = {
   user5: User;
   liquidator: User;
   marketConfig: MarketConfiguration;
+  chainId: number;
 } & ContractRecord &
   TokenRecord;
 

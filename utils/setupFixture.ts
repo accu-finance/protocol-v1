@@ -1,5 +1,5 @@
 import {Contract} from 'ethers';
-import {deployments, ethers, getNamedAccounts} from 'hardhat';
+import {deployments, getNamedAccounts} from 'hardhat';
 import {HardhatRuntimeEnvironment} from 'hardhat/types';
 import {
   AddressProvider,
@@ -39,8 +39,8 @@ import {
   WGateway,
 } from '../types';
 import {enumKeys} from '../utils';
-import getMarketConfig from '../utils/getMarketConfig';
 import {getContractAt} from './contractGetter';
+import getMarketConfig from './getMarketConfig';
 
 export const setupFixture = deployments.createFixture(async (hre: HardhatRuntimeEnvironment) => {
   const addressProviderId: AddressProviderId | undefined =
@@ -48,32 +48,38 @@ export const setupFixture = deployments.createFixture(async (hre: HardhatRuntime
   if (!addressProviderId) {
     throw new Error(`unsupported market  id '${process.env.ADDRESS_PROVIDER_ID}'`);
   }
+  const chainId = parseInt(await hre.getChainId());
+  if (!chainId) {
+    throw new Error("Current network doesn't have CHAIN ID");
+  }
 
   const marketConfig = getMarketConfig(addressProviderId);
 
   await deployments.fixture(['testEnv']);
 
   // non proxy contract
-  const addressProvider = (await ethers.getContract(ContractId.AddressProvider)) as AddressProvider;
-  const providerRegistry = (await ethers.getContract(ContractId.ProviderRegistry)) as ProviderRegistry;
-  const protocolDataProvider = (await ethers.getContract(ContractId.ProtocolDataProvider)) as ProtocolDataProvider;
-  const lendingRateOracle = (await ethers.getContract(ContractId.LendingRateOracle)) as LendingRateOracle;
-  const uniswapLiquiditySwapAdapter = (await ethers.getContract(
+  const addressProvider = (await hre.ethers.getContract(ContractId.AddressProvider)) as AddressProvider;
+  const providerRegistry = (await hre.ethers.getContract(ContractId.ProviderRegistry)) as ProviderRegistry;
+  const protocolDataProvider = (await hre.ethers.getContract(ContractId.ProtocolDataProvider)) as ProtocolDataProvider;
+  const lendingRateOracle = (await hre.ethers.getContract(ContractId.LendingRateOracle)) as LendingRateOracle;
+  const uniswapLiquiditySwapAdapter = (await hre.ethers.getContract(
     ContractId.UniswapLiquiditySwapAdapter
   )) as UniswapLiquiditySwapAdapter;
-  const uniswapRepayAdapter = (await ethers.getContract(ContractId.UniswapRepayAdapter)) as UniswapRepayAdapter;
-  const flashLiquidationAdapter = (await ethers.getContract(
+  const uniswapRepayAdapter = (await hre.ethers.getContract(ContractId.UniswapRepayAdapter)) as UniswapRepayAdapter;
+  const flashLiquidationAdapter = (await hre.ethers.getContract(
     ContractId.FlashLiquidationAdapter
   )) as FlashLiquidationAdapter;
   // mock contracts
-  const mockFlashloanReceiver = (await ethers.getContract(ContractId.MockFlashLoanReceiver)) as MockFlashLoanReceiver;
-  const mockUniswapRouter = (await ethers.getContract(ContractId.MockUniswapV2Router02)) as MockUniswapV2Router02;
+  const mockFlashloanReceiver = (await hre.ethers.getContract(
+    ContractId.MockFlashLoanReceiver
+  )) as MockFlashLoanReceiver;
+  const mockUniswapRouter = (await hre.ethers.getContract(ContractId.MockUniswapV2Router02)) as MockUniswapV2Router02;
 
   let wGateway: WGateway;
   if (marketConfig.nativeCurrency === NativeCurrency.ETH) {
-    wGateway = (await ethers.getContract(ContractId.WETHGateway)) as WETHGateway;
+    wGateway = (await hre.ethers.getContract(ContractId.WETHGateway)) as WETHGateway;
   } else {
-    wGateway = (await ethers.getContract(ContractId.WBNBGateway)) as WBNBGateway;
+    wGateway = (await hre.ethers.getContract(ContractId.WBNBGateway)) as WBNBGateway;
   }
 
   // proxy contracts
@@ -95,9 +101,9 @@ export const setupFixture = deployments.createFixture(async (hre: HardhatRuntime
 
   let mockPriceOracleSetter: IPriceOracleSetter;
   if (marketConfig.oracle === Oracle.Chainlink) {
-    mockPriceOracleSetter = (await ethers.getContract(ContractId.MockChainlinkPriceFeed)) as IPriceOracleSetter;
+    mockPriceOracleSetter = (await hre.ethers.getContract(ContractId.MockChainlinkPriceFeed)) as IPriceOracleSetter;
   } else {
-    mockPriceOracleSetter = (await ethers.getContract(ContractId.MockBandStdReference)) as IPriceOracleSetter;
+    mockPriceOracleSetter = (await hre.ethers.getContract(ContractId.MockBandStdReference)) as IPriceOracleSetter;
   }
 
   const asset = {} as PoolAsset<ERC20Token>;
@@ -106,9 +112,9 @@ export const setupFixture = deployments.createFixture(async (hre: HardhatRuntime
   const vdToken = {} as PoolAsset<VariableDebtToken>;
   for (const assetId of enumKeys(marketConfig.reserveConfig)) {
     if (assetId === AssetId.WNATIVE) {
-      asset[assetId] = (await ethers.getContract(assetId)) as MockWETH9;
+      asset[assetId] = (await hre.ethers.getContract(assetId)) as MockWETH9;
     } else {
-      asset[assetId] = (await ethers.getContract(assetId)) as MockMintableERC20;
+      asset[assetId] = (await hre.ethers.getContract(assetId)) as MockMintableERC20;
     }
 
     // aToken and debtToken are proxy contract in lending pool. have to query via lendingPool
@@ -156,39 +162,33 @@ export const setupFixture = deployments.createFixture(async (hre: HardhatRuntime
     aToken,
     sdToken,
     vdToken,
-    deployer: await setupUser(deployer, contract, tokenRecord, 'deployer'),
-    admin: await setupUser(admin, contract, tokenRecord, 'admin'),
-    emergencyAdmin: await setupUser(emergencyAdmin, contract, tokenRecord, 'emergencyAdmin'),
-    user1: await setupUser(user1, contract, tokenRecord, 'user1'),
-    user2: await setupUser(user2, contract, tokenRecord, 'user2'),
-    user3: await setupUser(user3, contract, tokenRecord, 'user3'),
-    user4: await setupUser(user4, contract, tokenRecord, 'user4'),
-    user5: await setupUser(user5, contract, tokenRecord, 'user5'),
-    liquidator: await setupUser(liquidator, contract, tokenRecord, 'liquidator'),
+    deployer: await setupUser(hre, deployer, contract, tokenRecord, 'deployer'),
+    admin: await setupUser(hre, admin, contract, tokenRecord, 'admin'),
+    emergencyAdmin: await setupUser(hre, emergencyAdmin, contract, tokenRecord, 'emergencyAdmin'),
+    user1: await setupUser(hre, user1, contract, tokenRecord, 'user1'),
+    user2: await setupUser(hre, user2, contract, tokenRecord, 'user2'),
+    user3: await setupUser(hre, user3, contract, tokenRecord, 'user3'),
+    user4: await setupUser(hre, user4, contract, tokenRecord, 'user4'),
+    user5: await setupUser(hre, user5, contract, tokenRecord, 'user5'),
+    liquidator: await setupUser(hre, liquidator, contract, tokenRecord, 'liquidator'),
     marketConfig: marketConfig,
+    chainId,
   } as Fixture;
 });
 
 export default setupFixture;
 
-async function _setupUsers(addresses: string[], contracts: ContractRecord, tokens: TokenRecord): Promise<User[]> {
-  const users = [] as User[];
-  for (const address of addresses) {
-    users.push(await setupUser(address, contracts, tokens));
-  }
-  return users;
-}
-
 async function setupUser<T extends {[contractName: string]: Contract}>(
+  hre: HardhatRuntimeEnvironment,
   address: string,
   contract: T,
   {asset, aToken, sdToken, vdToken}: TokenRecord,
   name?: string
 ): Promise<User & T> {
-  const signer = await ethers.getSigner(address);
+  const signer = await hre.ethers.getSigner(address);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const user: any = {address, name: name ? name : address} as User & T;
+  const user: any = {address, name: name ? name : address, signer} as User & T;
   for (const key of enumKeys(contract)) {
     user[key] = contract[key].connect(signer);
   }

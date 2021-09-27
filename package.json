@@ -7,7 +7,7 @@
     "artifacts"
   ],
   "scripts": {
-    "prepare": "node ./.setup.js && hardhat typechain",
+    "prepare": "node ./.setup.js && npm run compile",
     "lint": "eslint \"**/*.{js,ts}\" && solhint contracts/**/*.sol",
     "lint:fix": "eslint --fix \"**/*.{js,ts}\" && solhint --fix contracts/**/*.sol",
     "format": "npx prettier --check \"**/*.{ts,js,sol}\"",

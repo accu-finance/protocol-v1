@@ -2,8 +2,8 @@ import {waffleChai} from '@ethereum-waffle/chai';
 import {expect, use} from 'chai';
 import {Fixture, ProtocolErrors, RateMode} from '../types';
 import convertToCurrencyDecimals from '../utils/convertToCurrencyDecimals';
-import {borrow, deposit, mint, transfer} from '../utils/protocolTx';
 import setupFixture from '../utils/setupFixture';
+import {borrow, deposit, mint, transfer} from './helpers/protocolTx';
 
 use(waffleChai);
 

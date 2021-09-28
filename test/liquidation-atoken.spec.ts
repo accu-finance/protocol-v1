@@ -5,9 +5,9 @@ import {WAD, WAD_DECIMALS} from '../constants';
 import {Fixture, ProtocolErrors, RateMode} from '../types';
 import convertToCurrencyDecimals from '../utils/convertToCurrencyDecimals';
 import {getTxCostAndTimestamp, waitForTx} from '../utils/hhNetwork';
-import {calcExpectedVariableDebtTokenBalance} from '../utils/protocolCalculator';
-import {approve, borrow, deposit, getReserveData, getUserAccountData, getUserData, mint} from '../utils/protocolTx';
 import setupFixture from '../utils/setupFixture';
+import {calcExpectedVariableDebtTokenBalance} from './helpers/protocolCalculator';
+import {approve, borrow, deposit, getReserveData, getUserAccountData, getUserData, mint} from './helpers/protocolTx';
 
 const {Variable} = RateMode;
 const {

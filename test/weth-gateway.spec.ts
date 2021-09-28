@@ -8,8 +8,8 @@ import {AddressProviderId, Fixture, ProtocolErrors, RateMode} from '../types';
 import {deploySelfdestructTansfer} from '../utils/contractDeployer';
 import convertToCurrencyDecimals from '../utils/convertToCurrencyDecimals';
 import {waitForTx} from '../utils/hhNetwork';
-import {borrowETH, deposit, depositETH, mint, repayETH, transfer, withdrawETH} from '../utils/protocolTx';
 import setupFixture from '../utils/setupFixture';
+import {borrowETH, deposit, depositETH, mint, repayETH, transfer, withdrawETH} from './helpers/protocolTx';
 
 const {VL_INVALID_AMOUNT} = ProtocolErrors;
 

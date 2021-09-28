@@ -1,6 +1,6 @@
 import {BigNumber, constants} from 'ethers';
-import {PERCENTAGE, RAY, YEAR} from '../constants';
-import {DefaultInterestRateStrategy, RateMode, ReserveData, User, UserData} from '../types';
+import {PERCENTAGE, RAY, YEAR} from '../../constants';
+import {DefaultInterestRateStrategy, RateMode, ReserveData, User, UserData} from '../../types';
 
 const {Zero, MaxUint256} = constants;
 

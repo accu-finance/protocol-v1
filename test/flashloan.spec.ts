@@ -2,8 +2,8 @@ import {waffleChai} from '@ethereum-waffle/chai';
 import {expect, use} from 'chai';
 import {utils} from 'ethers';
 import {Fixture, ProtocolErrors, RateMode} from '../types';
-import {deposit, getReserveData, getUserData, mint} from '../utils/protocolTx';
 import setupFixture from '../utils/setupFixture';
+import {deposit, getReserveData, getUserData, mint} from './helpers/protocolTx';
 
 const {None, Variable, Stable} = RateMode;
 const {SAFEERC20_LOWLEVEL_CALL, LP_INVALID_FLASH_LOAN_EXECUTOR_RETURN, VL_COLLATERAL_BALANCE_IS_0} = ProtocolErrors;

@@ -1,8 +1,8 @@
 import {waffleChai} from '@ethereum-waffle/chai';
 import {use} from 'chai';
 import {ProtocolErrors, RateMode} from '../types';
-import {borrow, deposit, mint} from '../utils/protocolTx';
 import setupFixture from '../utils/setupFixture';
+import {borrow, deposit, mint} from './helpers/protocolTx';
 
 const {None} = RateMode;
 const {VL_INVALID_INTEREST_RATE_MODE_SELECTED} = ProtocolErrors;

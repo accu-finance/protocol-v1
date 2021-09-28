@@ -5,8 +5,8 @@ import {BigNumber, constants, utils} from 'ethers';
 import {_TypedDataEncoder} from 'ethers/lib/utils';
 import {Fixture} from '../types';
 import convertToCurrencyDecimals from '../utils/convertToCurrencyDecimals';
-import {deposit, mint} from '../utils/protocolTx';
 import setupFixture from '../utils/setupFixture';
+import {deposit, mint} from './helpers/protocolTx';
 
 const {Zero, MaxUint256, AddressZero} = constants;
 

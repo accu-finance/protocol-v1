@@ -4,8 +4,8 @@ import {constants} from 'ethers';
 import {APPROVAL_AMOUNT_LENDING_POOL} from '../constants';
 import {Fixture, ProtocolErrors, RateMode} from '../types';
 import convertToCurrencyDecimals from '../utils/convertToCurrencyDecimals';
-import {mint} from '../utils/protocolTx';
 import setupFixture from '../utils/setupFixture';
+import {mint} from './helpers/protocolTx';
 
 const {Zero} = constants;
 

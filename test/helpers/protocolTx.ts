@@ -3,7 +3,7 @@ import {expect, use} from 'chai';
 import {BigNumber, BigNumberish, constants, ContractReceipt, ContractTransaction, utils} from 'ethers';
 import {parseEther} from 'ethers/lib/utils';
 import hre, {ethers} from 'hardhat';
-import {AToken, StableDebtToken, VariableDebtToken} from '../typechain';
+import {AToken, StableDebtToken, VariableDebtToken} from '../../typechain';
 import {
   Address,
   ContractId,
@@ -14,10 +14,10 @@ import {
   ReserveData,
   User,
   UserData,
-} from '../types';
-import {advanceTimeAndBlock, getLatestBlockTimestamp, getTxCostAndTimestamp, waitForTx} from '../utils/hhNetwork';
-import {getContractAt} from './contractGetter';
-import convertToCurrencyDecimals from './convertToCurrencyDecimals';
+} from '../../types';
+import {getContractAt} from '../../utils/contractGetter';
+import convertToCurrencyDecimals from '../../utils/convertToCurrencyDecimals';
+import {advanceTimeAndBlock, getLatestBlockTimestamp, getTxCostAndTimestamp, waitForTx} from '../../utils/hhNetwork';
 import printDashboard from './printDashboard';
 import {
   calcExpectedReserveDataAfterBorrow,

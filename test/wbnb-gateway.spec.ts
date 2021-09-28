@@ -8,9 +8,9 @@ import {AddressProviderId, Fixture, ProtocolErrors, RateMode} from '../types';
 import {deploySelfdestructTansfer} from '../utils/contractDeployer';
 import convertToCurrencyDecimals from '../utils/convertToCurrencyDecimals';
 import {waitForTx} from '../utils/hhNetwork';
-import {deposit, mint, transfer} from '../utils/protocolTx';
-import {borrowBNB, depositBNB, repayBNB, withdrawBNB} from '../utils/protocolTxBnb';
 import setupFixture from '../utils/setupFixture';
+import {deposit, mint, transfer} from './helpers/protocolTx';
+import {borrowBNB, depositBNB, repayBNB, withdrawBNB} from './helpers/protocolTxBnb';
 
 const {VL_INVALID_AMOUNT} = ProtocolErrors;
 

@@ -1,8 +1,8 @@
 import Table, {HorizontalTable, HorizontalTableRow} from 'cli-table3';
 import colors from 'colors/safe';
 import {constants} from 'ethers';
-import {PERCENTAGE} from '../constants';
-import {ERC20Token, User} from '../types';
+import {PERCENTAGE} from '../../constants';
+import {ERC20Token, User} from '../../types';
 import {getReserveData, getTreasuryBalance, getUserAccountData, getUserData} from './protocolTx';
 
 const {MaxUint256} = constants;

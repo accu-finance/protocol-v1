@@ -5,8 +5,8 @@ import {REFERRAL_CODE} from '../constants';
 import {Fixture, RateMode} from '../types';
 import convertToCurrencyDecimals from '../utils/convertToCurrencyDecimals';
 import {getTxCostAndTimestamp, waitForTx} from '../utils/hhNetwork';
-import {borrow, buildRepayAdapterParams, deposit, getReserveData, getUserData, mint} from '../utils/protocolTx';
 import setupFixture from '../utils/setupFixture';
+import {borrow, buildRepayAdapterParams, deposit, getReserveData, getUserData, mint} from './helpers/protocolTx';
 
 const {HashZero, Zero} = constants;
 

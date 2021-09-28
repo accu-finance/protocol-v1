@@ -4,7 +4,8 @@ import {BigNumber, utils} from 'ethers';
 import {REFERRAL_CODE, WAD, WAD_DECIMALS} from '../constants';
 import {Fixture, RateMode} from '../types';
 import {getTxCostAndTimestamp, waitForTx} from '../utils/hhNetwork';
-import {calcExpectedVariableDebtTokenBalance} from '../utils/protocolCalculator';
+import setupFixture from '../utils/setupFixture';
+import {calcExpectedVariableDebtTokenBalance} from './helpers/protocolCalculator';
 import {
   borrow,
   buildFlashLiquidationAdapterParams,
@@ -13,8 +14,7 @@ import {
   getUserAccountData,
   getUserData,
   mint,
-} from '../utils/protocolTx';
-import setupFixture from '../utils/setupFixture';
+} from './helpers/protocolTx';
 
 use(waffleChai);
 

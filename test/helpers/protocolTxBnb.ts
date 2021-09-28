@@ -3,8 +3,10 @@ import {expect, use} from 'chai';
 import {BigNumberish, constants, ContractReceipt} from 'ethers';
 import {parseEther} from 'ethers/lib/utils';
 import {ethers} from 'hardhat';
-import {ExpectedTxResult, RateMode, User} from '../types';
-import convertToCurrencyDecimals from '../utils/convertToCurrencyDecimals';
+import {ExpectedTxResult, RateMode, User} from '../../types';
+import convertToCurrencyDecimals from '../../utils/convertToCurrencyDecimals';
+import {advanceTimeAndBlock, getLatestBlockTimestamp, getTxCostAndTimestamp, waitForTx} from '../../utils/hhNetwork';
+import printDashboard from './printDashboard';
 import {
   calcExpectedReserveDataAfterBorrow,
   calcExpectedReserveDataAfterDeposit,
@@ -14,9 +16,7 @@ import {
   calcExpectedUserDataAfterDeposit,
   calcExpectedUserDataAfterRepay,
   calcExpectedUserDataAfterWithdraw,
-} from '../utils/protocolCalculator';
-import {advanceTimeAndBlock, getLatestBlockTimestamp, getTxCostAndTimestamp, waitForTx} from './hhNetwork';
-import printDashboard from './printDashboard';
+} from './protocolCalculator';
 import {getReserveData, getUserData} from './protocolTx';
 
 const {Zero, MaxUint256} = constants;

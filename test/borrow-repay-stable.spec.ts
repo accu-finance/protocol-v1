@@ -2,8 +2,8 @@ import {waffleChai} from '@ethereum-waffle/chai';
 import {use} from 'chai';
 import {YEAR} from '../constants';
 import {Fixture, ProtocolErrors, RateMode} from '../types';
-import {borrow, deposit, mint, repay, withdraw} from '../utils/protocolTx';
 import setupFixture from '../utils/setupFixture';
+import {borrow, deposit, mint, repay, withdraw} from './helpers/protocolTx';
 
 const {Variable, Stable} = RateMode;
 const {

@@ -1,4 +1,4 @@
-import Table, {HorizontalTable, HorizontalTableRow} from 'cli-table3';
+import Table, {HorizontalTableRow} from 'cli-table3';
 import colors from 'colors/safe';
 import {constants} from 'ethers';
 import {PERCENTAGE} from '../../constants';
@@ -11,7 +11,7 @@ const printDashboard = async (asset: ERC20Token, user: User, description = ''): 
   const reserveData = await getReserveData(asset, user);
   const userData = await getUserData(asset, user);
   const userAccountData = await getUserAccountData(user);
-  const table = new Table() as HorizontalTable;
+  const table = new Table();
   const assetName = await asset.symbol();
   const assetDecimals = await asset.decimals();
   const assetPriceETH = await user.priceOracle.getAssetPrice(asset.address);

@@ -7,7 +7,8 @@
         "explicitTypes": "always",
         "printWidth": 120,
         "semi": true,
-        "singleQuote": false
+        "singleQuote": false,
+        "tabWidth": 2
       }
     }
   ],

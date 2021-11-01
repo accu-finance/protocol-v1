@@ -19,7 +19,7 @@ import {IBaseUniswapAdapter} from "./interfaces/IBaseUniswapAdapter.sol";
 /**
  * @title BaseUniswapAdapter
  * @notice Implements the logic for performing assets swaps in Uniswap V2
- * @author Aave
+ * @author Aave (modified by Accu)
  **/
 abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapter, Ownable {
   using SafeMath for uint256;

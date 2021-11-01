@@ -17,6 +17,11 @@ import {UserConfiguration} from "../protocol/libraries/configuration/UserConfigu
 import {DataTypes} from "../protocol/libraries/types/DataTypes.sol";
 import {DefaultReserveInterestRateStrategy} from "../protocol/lendingpool/DefaultReserveInterestRateStrategy.sol";
 
+/**
+ * @title AppDataProvider
+ * @notice Original contract is UiPoolDataProvider
+ * @author Aave (modified by Accu)
+ **/
 contract AppDataProvider is IAppDataProvider {
   using WadRayMath for uint256;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;

@@ -1,18 +1,15 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import './BaseAdminUpgradeabilityProxy.sol';
-import './InitializableUpgradeabilityProxy.sol';
+import "./BaseAdminUpgradeabilityProxy.sol";
+import "./InitializableUpgradeabilityProxy.sol";
 
 /**
  * @title InitializableAdminUpgradeabilityProxy
  * @dev Extends from BaseAdminUpgradeabilityProxy with an initializer for
  * initializing the implementation, admin, and init data.
  */
-contract InitializableAdminUpgradeabilityProxy is
-  BaseAdminUpgradeabilityProxy,
-  InitializableUpgradeabilityProxy
-{
+contract InitializableAdminUpgradeabilityProxy is BaseAdminUpgradeabilityProxy, InitializableUpgradeabilityProxy {
   /**
    * Contract initializer.
    * @param logic address of the initial implementation.
@@ -29,7 +26,7 @@ contract InitializableAdminUpgradeabilityProxy is
   ) public payable {
     require(_implementation() == address(0));
     InitializableUpgradeabilityProxy.initialize(logic, data);
-    assert(ADMIN_SLOT == bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1));
+    assert(ADMIN_SLOT == bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1));
     _setAdmin(admin);
   }
 

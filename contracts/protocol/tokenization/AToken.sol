@@ -1,34 +1,30 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {IERC20} from '../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {SafeERC20} from '../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {ILendingPool} from '../../interfaces/ILendingPool.sol';
-import {IAToken} from '../../interfaces/IAToken.sol';
-import {WadRayMath} from '../libraries/math/WadRayMath.sol';
-import {Errors} from '../libraries/helpers/Errors.sol';
-import {VersionedInitializable} from '../libraries/aave-upgradeability/VersionedInitializable.sol';
-import {IncentivizedERC20} from './IncentivizedERC20.sol';
-import {IAaveIncentivesController} from '../../interfaces/IAaveIncentivesController.sol';
+import {IERC20} from "../../dependencies/openzeppelin/contracts/IERC20.sol";
+import {SafeERC20} from "../../dependencies/openzeppelin/contracts/SafeERC20.sol";
+import {ILendingPool} from "../../interfaces/ILendingPool.sol";
+import {IAToken} from "../../interfaces/IAToken.sol";
+import {WadRayMath} from "../libraries/math/WadRayMath.sol";
+import {Errors} from "../libraries/helpers/Errors.sol";
+import {VersionedInitializable} from "../libraries/aave-upgradeability/VersionedInitializable.sol";
+import {IncentivizedERC20} from "./IncentivizedERC20.sol";
+import {IAaveIncentivesController} from "../../interfaces/IAaveIncentivesController.sol";
 
 /**
  * @title Aave ERC20 AToken
  * @dev Implementation of the interest bearing token for the Aave protocol
- * @author Aave
+ * @author Aave (modified by Accu)
  */
-contract AToken is
-  VersionedInitializable,
-  IncentivizedERC20('ATOKEN_IMPL', 'ATOKEN_IMPL', 0),
-  IAToken
-{
+contract AToken is VersionedInitializable, IncentivizedERC20("ATOKEN_IMPL", "ATOKEN_IMPL", 0), IAToken {
   using WadRayMath for uint256;
   using SafeERC20 for IERC20;
 
-  bytes public constant EIP712_REVISION = bytes('1');
+  bytes public constant EIP712_REVISION = bytes("1");
   bytes32 internal constant EIP712_DOMAIN =
-    keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)');
+    keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)");
   bytes32 public constant PERMIT_TYPEHASH =
-    keccak256('Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)');
+    keccak256("Permit(address owner,address spender,uint256 value,uint256 nonce,uint256 deadline)");
 
   uint256 public constant ATOKEN_REVISION = 0x1;
 
@@ -42,7 +38,7 @@ contract AToken is
   address internal _underlyingAsset;
   IAaveIncentivesController internal _incentivesController;
 
-  modifier onlyLendingPool {
+  modifier onlyLendingPool() {
     require(_msgSender() == address(_pool), Errors.CT_CALLER_MUST_BE_LENDING_POOL);
     _;
   }
@@ -79,13 +75,7 @@ contract AToken is
     }
 
     DOMAIN_SEPARATOR = keccak256(
-      abi.encode(
-        EIP712_DOMAIN,
-        keccak256(bytes(aTokenName)),
-        keccak256(EIP712_REVISION),
-        chainId,
-        address(this)
-      )
+      abi.encode(EIP712_DOMAIN, keccak256(bytes(aTokenName)), keccak256(EIP712_REVISION), chainId, address(this))
     );
 
     _setName(aTokenName);
@@ -205,12 +195,7 @@ contract AToken is
    * @param user The user whose balance is calculated
    * @return The balance of the user
    **/
-  function balanceOf(address user)
-    public
-    view
-    override(IncentivizedERC20, IERC20)
-    returns (uint256)
-  {
+  function balanceOf(address user) public view override(IncentivizedERC20, IERC20) returns (uint256) {
     return super.balanceOf(user).rayMul(_pool.getReserveNormalizedIncome(_underlyingAsset));
   }
 
@@ -230,12 +215,7 @@ contract AToken is
    * @return The scaled balance of the user
    * @return The scaled balance and the scaled total supply
    **/
-  function getScaledUserBalanceAndSupply(address user)
-    external
-    view
-    override
-    returns (uint256, uint256)
-  {
+  function getScaledUserBalanceAndSupply(address user) external view override returns (uint256, uint256) {
     return (super.balanceOf(user), super.totalSupply());
   }
 
@@ -273,7 +253,7 @@ contract AToken is
   /**
    * @dev Returns the address of the underlying asset of this aToken (E.g. WETH for aWETH)
    **/
-  function UNDERLYING_ASSET_ADDRESS() public override view returns (address) {
+  function UNDERLYING_ASSET_ADDRESS() public view returns (address) {
     return _underlyingAsset;
   }
 
@@ -305,12 +285,7 @@ contract AToken is
    * @param amount The amount getting transferred
    * @return The amount transferred
    **/
-  function transferUnderlyingTo(address target, uint256 amount)
-    external
-    override
-    onlyLendingPool
-    returns (uint256)
-  {
+  function transferUnderlyingTo(address target, uint256 amount) external override onlyLendingPool returns (uint256) {
     IERC20(_underlyingAsset).safeTransfer(target, amount);
     return amount;
   }
@@ -342,19 +317,18 @@ contract AToken is
     bytes32 r,
     bytes32 s
   ) external {
-    require(owner != address(0), 'INVALID_OWNER');
+    require(owner != address(0), "INVALID_OWNER");
     //solium-disable-next-line
-    require(block.timestamp <= deadline, 'INVALID_EXPIRATION');
+    require(block.timestamp <= deadline, "INVALID_EXPIRATION");
     uint256 currentValidNonce = _nonces[owner];
-    bytes32 digest =
-      keccak256(
-        abi.encodePacked(
-          '\x19\x01',
-          DOMAIN_SEPARATOR,
-          keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
-        )
-      );
-    require(owner == ecrecover(digest, v, r, s), 'INVALID_SIGNATURE');
+    bytes32 digest = keccak256(
+      abi.encodePacked(
+        "\x19\x01",
+        DOMAIN_SEPARATOR,
+        keccak256(abi.encode(PERMIT_TYPEHASH, owner, spender, value, currentValidNonce, deadline))
+      )
+    );
+    require(owner == ecrecover(digest, v, r, s), "INVALID_SIGNATURE");
     _nonces[owner] = currentValidNonce.add(1);
     _approve(owner, spender, value);
   }

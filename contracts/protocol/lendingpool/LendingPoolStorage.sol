@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {UserConfiguration} from '../libraries/configuration/UserConfiguration.sol';
-import {ReserveConfiguration} from '../libraries/configuration/ReserveConfiguration.sol';
-import {ReserveLogic} from '../libraries/logic/ReserveLogic.sol';
-import {ILendingPoolAddressesProvider} from '../../interfaces/ILendingPoolAddressesProvider.sol';
-import {DataTypes} from '../libraries/types/DataTypes.sol';
+import {UserConfiguration} from "../libraries/configuration/UserConfiguration.sol";
+import {ReserveConfiguration} from "../libraries/configuration/ReserveConfiguration.sol";
+import {ReserveLogic} from "../libraries/logic/ReserveLogic.sol";
+import {IAddressProvider} from "../../interfaces/IAddressProvider.sol";
+import {DataTypes} from "../libraries/types/DataTypes.sol";
 
 contract LendingPoolStorage {
   using ReserveLogic for DataTypes.ReserveData;
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
   using UserConfiguration for DataTypes.UserConfigurationMap;
 
-  ILendingPoolAddressesProvider internal _addressesProvider;
+  IAddressProvider internal _addressProvider;
 
   mapping(address => DataTypes.ReserveData) internal _reserves;
   mapping(address => DataTypes.UserConfigurationMap) internal _usersConfig;

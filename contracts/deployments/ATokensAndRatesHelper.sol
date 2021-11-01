@@ -4,8 +4,8 @@ pragma experimental ABIEncoderV2;
 
 import {LendingPool} from '../protocol/lendingpool/LendingPool.sol';
 import {
-  LendingPoolAddressesProvider
-} from '../protocol/configuration/LendingPoolAddressesProvider.sol';
+  AddressProvider
+} from '../protocol/configuration/AddressProvider.sol';
 import {LendingPoolConfigurator} from '../protocol/lendingpool/LendingPoolConfigurator.sol';
 import {AToken} from '../protocol/tokenization/AToken.sol';
 import {
@@ -16,7 +16,7 @@ import {StringLib} from './StringLib.sol';
 
 contract ATokensAndRatesHelper is Ownable {
   address payable private pool;
-  address private addressesProvider;
+  address private addressProvider;
   address private poolConfigurator;
   event deployedContracts(address aToken, address strategy);
 
@@ -32,16 +32,15 @@ contract ATokensAndRatesHelper is Ownable {
     uint256 liquidationBonus;
     uint256 reserveFactor;
     bool stableBorrowingEnabled;
-    bool borrowingEnabled;
   }
 
   constructor(
     address payable _pool,
-    address _addressesProvider,
+    address _addressProvider,
     address _poolConfigurator
   ) public {
     pool = _pool;
-    addressesProvider = _addressesProvider;
+    addressProvider = _addressProvider;
     poolConfigurator = _poolConfigurator;
   }
 
@@ -51,7 +50,7 @@ contract ATokensAndRatesHelper is Ownable {
         address(new AToken()),
         address(
           new DefaultReserveInterestRateStrategy(
-            LendingPoolAddressesProvider(addressesProvider),
+            AddressProvider(addressProvider),
             inputParams[i].rates[0],
             inputParams[i].rates[1],
             inputParams[i].rates[2],
@@ -74,12 +73,10 @@ contract ATokensAndRatesHelper is Ownable {
         inputParams[i].liquidationBonus
       );
 
-      if (inputParams[i].borrowingEnabled) {
-        configurator.enableBorrowingOnReserve(
-          inputParams[i].asset,
-          inputParams[i].stableBorrowingEnabled
-        );
-      }
+      configurator.enableBorrowingOnReserve(
+        inputParams[i].asset,
+        inputParams[i].stableBorrowingEnabled
+      );
       configurator.setReserveFactor(inputParams[i].asset, inputParams[i].reserveFactor);
     }
   }

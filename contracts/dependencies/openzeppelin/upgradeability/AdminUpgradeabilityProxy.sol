@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import './BaseAdminUpgradeabilityProxy.sol';
+import "./BaseAdminUpgradeabilityProxy.sol";
 
 /**
  * @title AdminUpgradeabilityProxy
@@ -23,7 +23,7 @@ contract AdminUpgradeabilityProxy is BaseAdminUpgradeabilityProxy, Upgradeabilit
     address _admin,
     bytes memory _data
   ) public payable UpgradeabilityProxy(_logic, _data) {
-    assert(ADMIN_SLOT == bytes32(uint256(keccak256('eip1967.proxy.admin')) - 1));
+    assert(ADMIN_SLOT == bytes32(uint256(keccak256("eip1967.proxy.admin")) - 1));
     _setAdmin(_admin);
   }
 

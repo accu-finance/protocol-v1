@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {IUniswapV2Router02} from '../../interfaces/IUniswapV2Router02.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
-import {MintableERC20} from '../tokens/MintableERC20.sol';
+import {IUniswapV2Router02} from "../../interfaces/IUniswapV2Router02.sol";
+import {IERC20} from "../../dependencies/openzeppelin/contracts/IERC20.sol";
+import {MockMintableERC20} from "../tokens/MockMintableERC20.sol";
 
 contract MockUniswapV2Router02 is IUniswapV2Router02 {
   mapping(address => uint256) internal _amountToReturn;
@@ -29,7 +29,7 @@ contract MockUniswapV2Router02 is IUniswapV2Router02 {
   ) external override returns (uint256[] memory amounts) {
     IERC20(path[0]).transferFrom(msg.sender, address(this), amountIn);
 
-    MintableERC20(path[1]).mint(_amountToReturn[path[0]]);
+    MockMintableERC20(path[1]).mint(_amountToReturn[path[0]]);
     IERC20(path[1]).transfer(to, _amountToReturn[path[0]]);
 
     amounts = new uint256[](path.length);
@@ -46,7 +46,7 @@ contract MockUniswapV2Router02 is IUniswapV2Router02 {
   ) external override returns (uint256[] memory amounts) {
     IERC20(path[0]).transferFrom(msg.sender, address(this), _amountToSwap[path[0]]);
 
-    MintableERC20(path[1]).mint(amountOut);
+    MockMintableERC20(path[1]).mint(amountOut);
     IERC20(path[1]).transfer(to, amountOut);
 
     amounts = new uint256[](path.length);
@@ -76,12 +76,7 @@ contract MockUniswapV2Router02 is IUniswapV2Router02 {
     defaultMockValue = value;
   }
 
-  function getAmountsOut(uint256 amountIn, address[] calldata path)
-    external
-    view
-    override
-    returns (uint256[] memory)
-  {
+  function getAmountsOut(uint256 amountIn, address[] calldata path) external view override returns (uint256[] memory) {
     uint256[] memory amounts = new uint256[](path.length);
     amounts[0] = amountIn;
     amounts[1] = _amountsOut[path[0]][path[1]][amountIn] > 0
@@ -90,12 +85,7 @@ contract MockUniswapV2Router02 is IUniswapV2Router02 {
     return amounts;
   }
 
-  function getAmountsIn(uint256 amountOut, address[] calldata path)
-    external
-    view
-    override
-    returns (uint256[] memory)
-  {
+  function getAmountsIn(uint256 amountOut, address[] calldata path) external view override returns (uint256[] memory) {
     uint256[] memory amounts = new uint256[](path.length);
     amounts[0] = _amountsIn[path[0]][path[1]][amountOut] > 0
       ? _amountsIn[path[0]][path[1]][amountOut]

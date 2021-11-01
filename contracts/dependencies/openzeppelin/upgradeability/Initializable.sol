@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity >=0.4.24 <0.7.0;
+pragma solidity 0.6.12;
 
 /**
  * @title Initializable
@@ -28,10 +28,7 @@ contract Initializable {
    * @dev Modifier to use in the initializer function of a contract.
    */
   modifier initializer() {
-    require(
-      initializing || isConstructor() || !initialized,
-      'Contract instance has already been initialized'
-    );
+    require(initializing || isConstructor() || !initialized, "Contract instance has already been initialized");
 
     bool isTopLevelCall = !initializing;
     if (isTopLevelCall) {

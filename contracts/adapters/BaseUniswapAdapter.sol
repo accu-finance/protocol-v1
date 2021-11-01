@@ -2,24 +2,24 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {PercentageMath} from '../protocol/libraries/math/PercentageMath.sol';
-import {SafeMath} from '../dependencies/openzeppelin/contracts/SafeMath.sol';
-import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
-import {IERC20Detailed} from '../dependencies/openzeppelin/contracts/IERC20Detailed.sol';
-import {SafeERC20} from '../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {Ownable} from '../dependencies/openzeppelin/contracts/Ownable.sol';
-import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
-import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
-import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
-import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
-import {IERC20WithPermit} from '../interfaces/IERC20WithPermit.sol';
-import {FlashLoanReceiverBase} from '../flashloan/base/FlashLoanReceiverBase.sol';
-import {IBaseUniswapAdapter} from './interfaces/IBaseUniswapAdapter.sol';
+import {PercentageMath} from "../protocol/libraries/math/PercentageMath.sol";
+import {SafeMath} from "../dependencies/openzeppelin/contracts/SafeMath.sol";
+import {IERC20} from "../dependencies/openzeppelin/contracts/IERC20.sol";
+import {IERC20Detailed} from "../dependencies/openzeppelin/contracts/IERC20Detailed.sol";
+import {SafeERC20} from "../dependencies/openzeppelin/contracts/SafeERC20.sol";
+import {Ownable} from "../dependencies/openzeppelin/contracts/Ownable.sol";
+import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
+import {DataTypes} from "../protocol/libraries/types/DataTypes.sol";
+import {IUniswapV2Router02} from "../interfaces/IUniswapV2Router02.sol";
+import {IPriceOracleGetter} from "../interfaces/IPriceOracleGetter.sol";
+import {IERC20WithPermit} from "../interfaces/IERC20WithPermit.sol";
+import {FlashLoanReceiverBase} from "../flashloan/base/FlashLoanReceiverBase.sol";
+import {IBaseUniswapAdapter} from "./interfaces/IBaseUniswapAdapter.sol";
 
 /**
  * @title BaseUniswapAdapter
  * @notice Implements the logic for performing assets swaps in Uniswap V2
- * @author Aave
+ * @author Aave (modified by Accu)
  **/
 abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapter, Ownable {
   using SafeMath for uint256;
@@ -38,11 +38,11 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
   IUniswapV2Router02 public immutable override UNISWAP_ROUTER;
 
   constructor(
-    ILendingPoolAddressesProvider addressesProvider,
+    IAddressProvider addressProvider,
     IUniswapV2Router02 uniswapRouter,
     address wethAddress
-  ) public FlashLoanReceiverBase(addressesProvider) {
-    ORACLE = IPriceOracleGetter(addressesProvider.getPriceOracle());
+  ) public FlashLoanReceiverBase(addressProvider) {
+    ORACLE = IPriceOracleGetter(addressProvider.getPriceOracle());
     UNISWAP_ROUTER = uniswapRouter;
     WETH_ADDRESS = wethAddress;
   }
@@ -75,13 +75,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
   {
     AmountCalc memory results = _getAmountsOutData(reserveIn, reserveOut, amountIn);
 
-    return (
-      results.calculatedAmount,
-      results.relativePrice,
-      results.amountInUsd,
-      results.amountOutUsd,
-      results.path
-    );
+    return (results.calculatedAmount, results.relativePrice, results.amountInUsd, results.amountOutUsd, results.path);
   }
 
   /**
@@ -112,13 +106,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
   {
     AmountCalc memory results = _getAmountsInData(reserveIn, reserveOut, amountOut);
 
-    return (
-      results.calculatedAmount,
-      results.relativePrice,
-      results.amountInUsd,
-      results.amountOutUsd,
-      results.path
-    );
+    return (results.calculatedAmount, results.relativePrice, results.amountInUsd, results.amountOutUsd, results.path);
   }
 
   /**
@@ -142,13 +130,12 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     uint256 fromAssetPrice = _getPrice(assetToSwapFrom);
     uint256 toAssetPrice = _getPrice(assetToSwapTo);
 
-    uint256 expectedMinAmountOut =
-      amountToSwap
-        .mul(fromAssetPrice.mul(10**toAssetDecimals))
-        .div(toAssetPrice.mul(10**fromAssetDecimals))
-        .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(MAX_SLIPPAGE_PERCENT));
+    uint256 expectedMinAmountOut = amountToSwap
+      .mul(fromAssetPrice.mul(10**toAssetDecimals))
+      .div(toAssetPrice.mul(10**fromAssetDecimals))
+      .percentMul(PercentageMath.PERCENTAGE_FACTOR.sub(MAX_SLIPPAGE_PERCENT));
 
-    require(expectedMinAmountOut < minAmountOut, 'minAmountOut exceed max slippage');
+    require(expectedMinAmountOut < minAmountOut, "minAmountOut exceed max slippage");
 
     // Approves the transfer for the swap. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
     IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), 0);
@@ -165,14 +152,13 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       path[0] = assetToSwapFrom;
       path[1] = assetToSwapTo;
     }
-    uint256[] memory amounts =
-      UNISWAP_ROUTER.swapExactTokensForTokens(
-        amountToSwap,
-        minAmountOut,
-        path,
-        address(this),
-        block.timestamp
-      );
+    uint256[] memory amounts = UNISWAP_ROUTER.swapExactTokensForTokens(
+      amountToSwap,
+      minAmountOut,
+      path,
+      address(this),
+      block.timestamp
+    );
 
     emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[amounts.length - 1]);
 
@@ -201,13 +187,12 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     uint256 fromAssetPrice = _getPrice(assetToSwapFrom);
     uint256 toAssetPrice = _getPrice(assetToSwapTo);
 
-    uint256 expectedMaxAmountToSwap =
-      amountToReceive
-        .mul(toAssetPrice.mul(10**fromAssetDecimals))
-        .div(fromAssetPrice.mul(10**toAssetDecimals))
-        .percentMul(PercentageMath.PERCENTAGE_FACTOR.add(MAX_SLIPPAGE_PERCENT));
+    uint256 expectedMaxAmountToSwap = amountToReceive
+      .mul(toAssetPrice.mul(10**fromAssetDecimals))
+      .div(fromAssetPrice.mul(10**toAssetDecimals))
+      .percentMul(PercentageMath.PERCENTAGE_FACTOR.add(MAX_SLIPPAGE_PERCENT));
 
-    require(maxAmountToSwap < expectedMaxAmountToSwap, 'maxAmountToSwap exceed max slippage');
+    require(maxAmountToSwap < expectedMaxAmountToSwap, "maxAmountToSwap exceed max slippage");
 
     // Approves the transfer for the swap. Approves for 0 first to comply with tokens that implement the anti frontrunning approval fix.
     IERC20(assetToSwapFrom).safeApprove(address(UNISWAP_ROUTER), 0);
@@ -225,14 +210,13 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       path[1] = assetToSwapTo;
     }
 
-    uint256[] memory amounts =
-      UNISWAP_ROUTER.swapTokensForExactTokens(
-        amountToReceive,
-        maxAmountToSwap,
-        path,
-        address(this),
-        block.timestamp
-      );
+    uint256[] memory amounts = UNISWAP_ROUTER.swapTokensForExactTokens(
+      amountToReceive,
+      maxAmountToSwap,
+      path,
+      address(this),
+      block.timestamp
+    );
 
     emit Swapped(assetToSwapFrom, assetToSwapTo, amounts[0], amounts[amounts.length - 1]);
 
@@ -305,8 +289,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
    * @return whether or not permit should be called
    */
   function _usePermit(PermitSignature memory signature) internal pure returns (bool) {
-    return
-      !(uint256(signature.deadline) == uint256(signature.v) && uint256(signature.deadline) == 0);
+    return !(uint256(signature.deadline) == uint256(signature.v) && uint256(signature.deadline) == 0);
   }
 
   /**
@@ -374,9 +357,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       pathWithWeth[1] = WETH_ADDRESS;
       pathWithWeth[2] = reserveOut;
 
-      try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth) returns (
-        uint256[] memory resultsWithWeth
-      ) {
+      try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, pathWithWeth) returns (uint256[] memory resultsWithWeth) {
         amountsWithWeth = resultsWithWeth;
       } catch {
         amountsWithWeth = new uint256[](3);
@@ -386,14 +367,10 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     }
 
     uint256 bestAmountOut;
-    try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, simplePath) returns (
-      uint256[] memory resultAmounts
-    ) {
+    try UNISWAP_ROUTER.getAmountsOut(finalAmountIn, simplePath) returns (uint256[] memory resultAmounts) {
       amountsWithoutWeth = resultAmounts;
 
-      bestAmountOut = (amountsWithWeth[2] > amountsWithoutWeth[1])
-        ? amountsWithWeth[2]
-        : amountsWithoutWeth[1];
+      bestAmountOut = (amountsWithWeth[2] > amountsWithoutWeth[1]) ? amountsWithWeth[2] : amountsWithoutWeth[1];
     } catch {
       amountsWithoutWeth = new uint256[](2);
       bestAmountOut = amountsWithWeth[2];
@@ -402,10 +379,9 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     uint256 reserveInDecimals = _getDecimals(reserveIn);
     uint256 reserveOutDecimals = _getDecimals(reserveOut);
 
-    uint256 outPerInPrice =
-      finalAmountIn.mul(10**18).mul(10**reserveOutDecimals).div(
-        bestAmountOut.mul(10**reserveInDecimals)
-      );
+    uint256 outPerInPrice = finalAmountIn.mul(10**18).mul(10**reserveOutDecimals).div(
+      bestAmountOut.mul(10**reserveInDecimals)
+    );
 
     return
       AmountCalc(
@@ -413,9 +389,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
         outPerInPrice,
         _calcUsdValue(reserveIn, amountIn, reserveInDecimals),
         _calcUsdValue(reserveOut, bestAmountOut, reserveOutDecimals),
-        (bestAmountOut == 0) ? new address[](2) : (bestAmountOut == amountsWithoutWeth[1])
-          ? simplePath
-          : pathWithWeth
+        (bestAmountOut == 0) ? new address[](2) : (bestAmountOut == amountsWithoutWeth[1]) ? simplePath : pathWithWeth
       );
   }
 
@@ -452,8 +426,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
         );
     }
 
-    (uint256[] memory amounts, address[] memory path) =
-      _getAmountsInAndPath(reserveIn, reserveOut, amountOut);
+    (uint256[] memory amounts, address[] memory path) = _getAmountsInAndPath(reserveIn, reserveOut, amountOut);
 
     // Add flash loan fee
     uint256 finalAmountIn = amounts[0].add(amounts[0].mul(FLASHLOAN_PREMIUM_TOTAL).div(10000));
@@ -461,10 +434,9 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
     uint256 reserveInDecimals = _getDecimals(reserveIn);
     uint256 reserveOutDecimals = _getDecimals(reserveOut);
 
-    uint256 inPerOutPrice =
-      amountOut.mul(10**18).mul(10**reserveInDecimals).div(
-        finalAmountIn.mul(10**reserveOutDecimals)
-      );
+    uint256 inPerOutPrice = amountOut.mul(10**18).mul(10**reserveInDecimals).div(
+      finalAmountIn.mul(10**reserveOutDecimals)
+    );
 
     return
       AmountCalc(
@@ -501,9 +473,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       pathWithWeth[1] = WETH_ADDRESS;
       pathWithWeth[2] = reserveOut;
 
-      try UNISWAP_ROUTER.getAmountsIn(amountOut, pathWithWeth) returns (
-        uint256[] memory resultsWithWeth
-      ) {
+      try UNISWAP_ROUTER.getAmountsIn(amountOut, pathWithWeth) returns (uint256[] memory resultsWithWeth) {
         amountsWithWeth = resultsWithWeth;
       } catch {
         amountsWithWeth = new uint256[](3);
@@ -512,9 +482,7 @@ abstract contract BaseUniswapAdapter is FlashLoanReceiverBase, IBaseUniswapAdapt
       amountsWithWeth = new uint256[](3);
     }
 
-    try UNISWAP_ROUTER.getAmountsIn(amountOut, simplePath) returns (
-      uint256[] memory resultAmounts
-    ) {
+    try UNISWAP_ROUTER.getAmountsIn(amountOut, simplePath) returns (uint256[] memory resultAmounts) {
       amountsWithoutWeth = resultAmounts;
 
       return

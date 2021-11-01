@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {SafeMath} from '../../../dependencies/openzeppelin/contracts/SafeMath.sol';
-import {IERC20} from '../../../dependencies/openzeppelin/contracts/IERC20.sol';
-import {SafeERC20} from '../../../dependencies/openzeppelin/contracts/SafeERC20.sol';
-import {IAToken} from '../../../interfaces/IAToken.sol';
-import {IStableDebtToken} from '../../../interfaces/IStableDebtToken.sol';
-import {IVariableDebtToken} from '../../../interfaces/IVariableDebtToken.sol';
-import {IReserveInterestRateStrategy} from '../../../interfaces/IReserveInterestRateStrategy.sol';
-import {ReserveConfiguration} from '../configuration/ReserveConfiguration.sol';
-import {MathUtils} from '../math/MathUtils.sol';
-import {WadRayMath} from '../math/WadRayMath.sol';
-import {PercentageMath} from '../math/PercentageMath.sol';
-import {Errors} from '../helpers/Errors.sol';
-import {DataTypes} from '../types/DataTypes.sol';
+import {SafeMath} from "../../../dependencies/openzeppelin/contracts/SafeMath.sol";
+import {IERC20} from "../../../dependencies/openzeppelin/contracts/IERC20.sol";
+import {SafeERC20} from "../../../dependencies/openzeppelin/contracts/SafeERC20.sol";
+import {IAToken} from "../../../interfaces/IAToken.sol";
+import {IStableDebtToken} from "../../../interfaces/IStableDebtToken.sol";
+import {IVariableDebtToken} from "../../../interfaces/IVariableDebtToken.sol";
+import {IReserveInterestRateStrategy} from "../../../interfaces/IReserveInterestRateStrategy.sol";
+import {ReserveConfiguration} from "../configuration/ReserveConfiguration.sol";
+import {MathUtils} from "../math/MathUtils.sol";
+import {WadRayMath} from "../math/WadRayMath.sol";
+import {PercentageMath} from "../math/PercentageMath.sol";
+import {Errors} from "../helpers/Errors.sol";
+import {DataTypes} from "../types/DataTypes.sol";
 
 /**
  * @title ReserveLogic library
@@ -54,11 +54,7 @@ library ReserveLogic {
    * @param reserve The reserve object
    * @return the normalized income. expressed in ray
    **/
-  function getNormalizedIncome(DataTypes.ReserveData storage reserve)
-    internal
-    view
-    returns (uint256)
-  {
+  function getNormalizedIncome(DataTypes.ReserveData storage reserve) internal view returns (uint256) {
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
@@ -67,10 +63,9 @@ library ReserveLogic {
       return reserve.liquidityIndex;
     }
 
-    uint256 cumulated =
-      MathUtils.calculateLinearInterest(reserve.currentLiquidityRate, timestamp).rayMul(
-        reserve.liquidityIndex
-      );
+    uint256 cumulated = MathUtils.calculateLinearInterest(reserve.currentLiquidityRate, timestamp).rayMul(
+      reserve.liquidityIndex
+    );
 
     return cumulated;
   }
@@ -82,11 +77,7 @@ library ReserveLogic {
    * @param reserve The reserve object
    * @return The normalized variable debt. expressed in ray
    **/
-  function getNormalizedDebt(DataTypes.ReserveData storage reserve)
-    internal
-    view
-    returns (uint256)
-  {
+  function getNormalizedDebt(DataTypes.ReserveData storage reserve) internal view returns (uint256) {
     uint40 timestamp = reserve.lastUpdateTimestamp;
 
     //solium-disable-next-line
@@ -95,10 +86,9 @@ library ReserveLogic {
       return reserve.variableBorrowIndex;
     }
 
-    uint256 cumulated =
-      MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp).rayMul(
-        reserve.variableBorrowIndex
-      );
+    uint256 cumulated = MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp).rayMul(
+      reserve.variableBorrowIndex
+    );
 
     return cumulated;
   }
@@ -108,20 +98,18 @@ library ReserveLogic {
    * @param reserve the reserve object
    **/
   function updateState(DataTypes.ReserveData storage reserve) internal {
-    uint256 scaledVariableDebt =
-      IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
+    uint256 scaledVariableDebt = IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply();
     uint256 previousVariableBorrowIndex = reserve.variableBorrowIndex;
     uint256 previousLiquidityIndex = reserve.liquidityIndex;
     uint40 lastUpdatedTimestamp = reserve.lastUpdateTimestamp;
 
-    (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) =
-      _updateIndexes(
-        reserve,
-        scaledVariableDebt,
-        previousLiquidityIndex,
-        previousVariableBorrowIndex,
-        lastUpdatedTimestamp
-      );
+    (uint256 newLiquidityIndex, uint256 newVariableBorrowIndex) = _updateIndexes(
+      reserve,
+      scaledVariableDebt,
+      previousLiquidityIndex,
+      previousVariableBorrowIndex,
+      lastUpdatedTimestamp
+    );
 
     _mintToTreasury(
       reserve,
@@ -212,24 +200,22 @@ library ReserveLogic {
     //calculates the total variable debt locally using the scaled total supply instead
     //of totalSupply(), as it's noticeably cheaper. Also, the index has been
     //updated by the previous updateState() call
-    vars.totalVariableDebt = IVariableDebtToken(reserve.variableDebtTokenAddress)
-      .scaledTotalSupply()
-      .rayMul(reserve.variableBorrowIndex);
-
-    (
-      vars.newLiquidityRate,
-      vars.newStableRate,
-      vars.newVariableRate
-    ) = IReserveInterestRateStrategy(reserve.interestRateStrategyAddress).calculateInterestRates(
-      reserveAddress,
-      aTokenAddress,
-      liquidityAdded,
-      liquidityTaken,
-      vars.totalStableDebt,
-      vars.totalVariableDebt,
-      vars.avgStableRate,
-      reserve.configuration.getReserveFactor()
+    vars.totalVariableDebt = IVariableDebtToken(reserve.variableDebtTokenAddress).scaledTotalSupply().rayMul(
+      reserve.variableBorrowIndex
     );
+
+    (vars.newLiquidityRate, vars.newStableRate, vars.newVariableRate) = IReserveInterestRateStrategy(
+      reserve.interestRateStrategyAddress
+    ).calculateInterestRates(
+        reserveAddress,
+        aTokenAddress,
+        liquidityAdded,
+        liquidityTaken,
+        vars.totalStableDebt,
+        vars.totalVariableDebt,
+        vars.avgStableRate,
+        reserve.configuration.getReserveFactor()
+      );
     require(vars.newLiquidityRate <= type(uint128).max, Errors.RL_LIQUIDITY_RATE_OVERFLOW);
     require(vars.newStableRate <= type(uint128).max, Errors.RL_STABLE_BORROW_RATE_OVERFLOW);
     require(vars.newVariableRate <= type(uint128).max, Errors.RL_VARIABLE_BORROW_RATE_OVERFLOW);
@@ -311,11 +297,9 @@ library ReserveLogic {
     vars.previousStableDebt = vars.principalStableDebt.rayMul(vars.cumulatedStableInterest);
 
     //debt accrued is the sum of the current debt minus the sum of the debt at the last update
-    vars.totalDebtAccrued = vars
-      .currentVariableDebt
-      .add(vars.currentStableDebt)
-      .sub(vars.previousVariableDebt)
-      .sub(vars.previousStableDebt);
+    vars.totalDebtAccrued = vars.currentVariableDebt.add(vars.currentStableDebt).sub(vars.previousVariableDebt).sub(
+      vars.previousStableDebt
+    );
 
     vars.amountToMint = vars.totalDebtAccrued.percentMul(vars.reserveFactor);
 
@@ -345,8 +329,7 @@ library ReserveLogic {
 
     //only cumulating if there is any income being produced
     if (currentLiquidityRate > 0) {
-      uint256 cumulatedLiquidityInterest =
-        MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
+      uint256 cumulatedLiquidityInterest = MathUtils.calculateLinearInterest(currentLiquidityRate, timestamp);
       newLiquidityIndex = cumulatedLiquidityInterest.rayMul(liquidityIndex);
       require(newLiquidityIndex <= type(uint128).max, Errors.RL_LIQUIDITY_INDEX_OVERFLOW);
 
@@ -355,13 +338,12 @@ library ReserveLogic {
       //as the liquidity rate might come only from stable rate loans, we need to ensure
       //that there is actual variable debt before accumulating
       if (scaledVariableDebt != 0) {
-        uint256 cumulatedVariableBorrowInterest =
-          MathUtils.calculateCompoundedInterest(reserve.currentVariableBorrowRate, timestamp);
-        newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
-        require(
-          newVariableBorrowIndex <= type(uint128).max,
-          Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW
+        uint256 cumulatedVariableBorrowInterest = MathUtils.calculateCompoundedInterest(
+          reserve.currentVariableBorrowRate,
+          timestamp
         );
+        newVariableBorrowIndex = cumulatedVariableBorrowInterest.rayMul(variableBorrowIndex);
+        require(newVariableBorrowIndex <= type(uint128).max, Errors.RL_VARIABLE_BORROW_INDEX_OVERFLOW);
         reserve.variableBorrowIndex = uint128(newVariableBorrowIndex);
       }
     }

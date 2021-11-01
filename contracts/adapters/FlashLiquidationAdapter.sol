@@ -2,20 +2,20 @@
 pragma solidity 0.6.12;
 pragma experimental ABIEncoderV2;
 
-import {BaseUniswapAdapter} from './BaseUniswapAdapter.sol';
-import {ILendingPoolAddressesProvider} from '../interfaces/ILendingPoolAddressesProvider.sol';
-import {IUniswapV2Router02} from '../interfaces/IUniswapV2Router02.sol';
-import {IERC20} from '../dependencies/openzeppelin/contracts/IERC20.sol';
-import {DataTypes} from '../protocol/libraries/types/DataTypes.sol';
-import {Helpers} from '../protocol/libraries/helpers/Helpers.sol';
-import {IPriceOracleGetter} from '../interfaces/IPriceOracleGetter.sol';
-import {IAToken} from '../interfaces/IAToken.sol';
-import {ReserveConfiguration} from '../protocol/libraries/configuration/ReserveConfiguration.sol';
+import {BaseUniswapAdapter} from "./BaseUniswapAdapter.sol";
+import {IAddressProvider} from "../interfaces/IAddressProvider.sol";
+import {IUniswapV2Router02} from "../interfaces/IUniswapV2Router02.sol";
+import {IERC20} from "../dependencies/openzeppelin/contracts/IERC20.sol";
+import {DataTypes} from "../protocol/libraries/types/DataTypes.sol";
+import {Helpers} from "../protocol/libraries/helpers/Helpers.sol";
+import {IPriceOracleGetter} from "../interfaces/IPriceOracleGetter.sol";
+import {IAToken} from "../interfaces/IAToken.sol";
+import {ReserveConfiguration} from "../protocol/libraries/configuration/ReserveConfiguration.sol";
 
 /**
  * @title UniswapLiquiditySwapAdapter
  * @notice Uniswap V2 Adapter to swap liquidity.
- * @author Aave
+ * @author Aave (modified by Accu)
  **/
 contract FlashLiquidationAdapter is BaseUniswapAdapter {
   using ReserveConfiguration for DataTypes.ReserveConfigurationMap;
@@ -41,10 +41,10 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
   }
 
   constructor(
-    ILendingPoolAddressesProvider addressesProvider,
+    IAddressProvider addressProvider,
     IUniswapV2Router02 uniswapRouter,
     address wethAddress
-  ) public BaseUniswapAdapter(addressesProvider, uniswapRouter, wethAddress) {}
+  ) public BaseUniswapAdapter(addressProvider, uniswapRouter, wethAddress) {}
 
   /**
    * @dev Liquidate a non-healthy position collateral-wise, with a Health Factor below 1, using Flash Loan and Uniswap to repay flash loan premium.
@@ -68,11 +68,11 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
     address initiator,
     bytes calldata params
   ) external override returns (bool) {
-    require(msg.sender == address(LENDING_POOL), 'CALLER_MUST_BE_LENDING_POOL');
+    require(msg.sender == address(LENDING_POOL), "CALLER_MUST_BE_LENDING_POOL");
 
     LiquidationParams memory decodedParams = _decodeParams(params);
 
-    require(assets.length == 1 && assets[0] == decodedParams.borrowedAsset, 'INCONSISTENT_PARAMS');
+    require(assets.length == 1 && assets[0] == decodedParams.borrowedAsset, "INCONSISTENT_PARAMS");
 
     _liquidateAndSwap(
       decodedParams.collateralAsset,
@@ -171,13 +171,10 @@ contract FlashLiquidationAdapter is BaseUniswapAdapter {
    * @return LiquidationParams struct containing decoded params
    */
   function _decodeParams(bytes memory params) internal pure returns (LiquidationParams memory) {
-    (
-      address collateralAsset,
-      address borrowedAsset,
-      address user,
-      uint256 debtToCover,
-      bool useEthPath
-    ) = abi.decode(params, (address, address, address, uint256, bool));
+    (address collateralAsset, address borrowedAsset, address user, uint256 debtToCover, bool useEthPath) = abi.decode(
+      params,
+      (address, address, address, uint256, bool)
+    );
 
     return LiquidationParams(collateralAsset, borrowedAsset, user, debtToCover, useEthPath);
   }

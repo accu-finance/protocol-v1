@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity 0.6.12;
 
-import {Errors} from '../helpers/Errors.sol';
-import {DataTypes} from '../types/DataTypes.sol';
+import {Errors} from "../helpers/Errors.sol";
+import {DataTypes} from "../types/DataTypes.sol";
 
 /**
  * @title UserConfiguration library
@@ -10,8 +10,7 @@ import {DataTypes} from '../types/DataTypes.sol';
  * @notice Implements the bitmap logic to handle the user configuration
  */
 library UserConfiguration {
-  uint256 internal constant BORROWING_MASK =
-    0x5555555555555555555555555555555555555555555555555555555555555555;
+  uint256 internal constant BORROWING_MASK = 0x5555555555555555555555555555555555555555555555555555555555555555;
 
   /**
    * @dev Sets if the user is borrowing the reserve identified by reserveIndex
@@ -25,9 +24,7 @@ library UserConfiguration {
     bool borrowing
   ) internal {
     require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
-    self.data =
-      (self.data & ~(1 << (reserveIndex * 2))) |
-      (uint256(borrowing ? 1 : 0) << (reserveIndex * 2));
+    self.data = (self.data & ~(1 << (reserveIndex * 2))) | (uint256(borrowing ? 1 : 0) << (reserveIndex * 2));
   }
 
   /**
@@ -53,10 +50,11 @@ library UserConfiguration {
    * @param reserveIndex The index of the reserve in the bitmap
    * @return True if the user has been using a reserve for borrowing or as collateral, false otherwise
    **/
-  function isUsingAsCollateralOrBorrowing(
-    DataTypes.UserConfigurationMap memory self,
-    uint256 reserveIndex
-  ) internal pure returns (bool) {
+  function isUsingAsCollateralOrBorrowing(DataTypes.UserConfigurationMap memory self, uint256 reserveIndex)
+    internal
+    pure
+    returns (bool)
+  {
     require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
     return (self.data >> (reserveIndex * 2)) & 3 != 0;
   }
@@ -67,11 +65,7 @@ library UserConfiguration {
    * @param reserveIndex The index of the reserve in the bitmap
    * @return True if the user has been using a reserve for borrowing, false otherwise
    **/
-  function isBorrowing(DataTypes.UserConfigurationMap memory self, uint256 reserveIndex)
-    internal
-    pure
-    returns (bool)
-  {
+  function isBorrowing(DataTypes.UserConfigurationMap memory self, uint256 reserveIndex) internal pure returns (bool) {
     require(reserveIndex < 128, Errors.UL_INVALID_INDEX);
     return (self.data >> (reserveIndex * 2)) & 1 != 0;
   }

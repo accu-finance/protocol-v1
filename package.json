@@ -1,13 +1,17 @@
 {
   "name": "@accu.finance/protocol-v1",
-  "version": "1.0.1",
+  "version": "1.0.0",
   "description": "Accu Protocol V1 smart contracts - A fork of Aave Protocol V2",
   "files": [
+    "abi",
+    "artifacts",
     "contracts",
-    "artifacts"
+    "deployments",
+    "exports",
+    "types"
   ],
   "scripts": {
-    "prepare": "node ./.setup.js && npm run compile",
+    "prepare": "node ./.setup.js && npx husky install && npm run compile",
     "lint": "eslint \"**/*.{js,ts}\" && solhint contracts/**/*.sol",
     "lint:fix": "eslint --fix \"**/*.{js,ts}\" && solhint --fix contracts/**/*.sol",
     "format": "npx prettier --check \"**/*.{ts,js,sol}\"",
@@ -79,21 +83,12 @@
       "pre-commit": "pretty-quick --staged --pattern 'contracts/**/*.sol' --pattern '**/*.{ts,js}'"
     }
   },
-  "author": "Aave",
-  "contributors": [
-    "Ernesto Boado <ernesto@aave.com>",
-    "Emilio Frangella <emilio@aave.com>",
-    "Andrey Kozlov <andrey@aave.com>",
-    "David Racero <david.k@aave.com>",
-    "Pol Sendra <pol@aave.com>",
-    "David Truong <david@aave.com>"
-  ],
+  "author": "",
+  "contributors": [],
   "license": "AGPLv3",
-  "keywords": [
-    "aave",
-    "protocol",
-    "protocol-v2",
-    "ethereum",
-    "solidity"
-  ]
+  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/accu-finance/protocol-v1.git"
+  }
 }
